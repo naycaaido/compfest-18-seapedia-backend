@@ -13,6 +13,7 @@ import { SellerModule } from './features/seller/seller.module';
 import { DriverModule } from './features/driver/driver.module';
 import { AdminModule } from './features/admin/admin.module';
 import { AuthGuard } from './guards/auth.guard';
+import { WalletModule } from './features/wallet/wallet.module';
 
 @Module({
   imports: [
@@ -48,6 +49,7 @@ import { AuthGuard } from './guards/auth.guard';
     SellerModule,
     DriverModule,
     AdminModule,
+    WalletModule,
   ],
   controllers: [AppController],
   providers: [

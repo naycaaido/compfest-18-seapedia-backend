@@ -8,9 +8,6 @@ export class Buyer extends BaseEntity {
     @PrimaryGeneratedColumn()
     id!:number
 
-    @Column({type:"int",default:0})
-    wallet_balance!:number
-
     @Column({type:"varchar",length:255,
         nullable:true
     })

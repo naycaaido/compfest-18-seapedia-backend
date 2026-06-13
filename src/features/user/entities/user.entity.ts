@@ -6,6 +6,7 @@ import { Seller } from "../../seller/entities/seller.entity";
 import { Driver } from "../../driver/entities/driver.entity";
 import { Admin } from "../../admin/entities/admin.entity";
 import { Exclude } from "class-transformer";
+import { Wallet } from "src/features/wallet/entities/wallet.entity";
 
 
 @Entity({name:"users"})
@@ -27,6 +28,11 @@ export class User extends BaseEntity {
         cascade:['insert',"update"],
     })
     roles!:UserRoles[]
+
+    @OneToOne(() => Wallet, wallet => wallet.user,{
+        cascade: ['insert','update'],
+    })
+    wallet!:Wallet
 
     @OneToOne(() => Buyer, buyer => buyer.user,{
         cascade:['insert'],

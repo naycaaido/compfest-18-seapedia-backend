@@ -6,9 +6,6 @@ export class Driver extends BaseEntity {
     @PrimaryGeneratedColumn()
     id!:number
 
-    @Column({type:"int",default:0})
-    wallet_balance!:number
-
     @OneToOne(() => User, (user) => user.driver,{
         onDelete:'CASCADE',
     })

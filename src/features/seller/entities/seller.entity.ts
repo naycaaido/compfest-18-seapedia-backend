@@ -7,9 +7,6 @@ export class Seller extends BaseEntity {
     @PrimaryGeneratedColumn()
     id!:number
 
-    @Column({type:"int",default:0})
-    wallet_balance!:number
-
     @OneToOne(() => User, (user) => user.seller,{
         onDelete:'CASCADE',
     })

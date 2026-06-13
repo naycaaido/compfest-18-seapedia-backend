@@ -16,6 +16,7 @@ import { LoginUserDto } from './dto/login-user.dto';
 import { Payload } from 'src/common/utils';
 import { log } from 'console';
 import { instanceToPlain } from 'class-transformer';
+import { Wallet } from '../wallet/entities/wallet.entity';
 
 @Injectable()
 export class UserService {
@@ -85,7 +86,8 @@ export class UserService {
     const hash_password = await this.hashing(createUserDto.password)
     const newUser = this.userRepository.create({
       ...createUserDto,
-      password:hash_password
+      password:hash_password,
+      wallet:new Wallet()
     })
     this.addRoles(createUserDto.role,newUser)
     
@@ -122,7 +124,8 @@ export class UserService {
         "roles",
         "buyer",
         "seller",
-        "driver"
+        "driver",
+        "wallet"
       ]
     })
     return user;
