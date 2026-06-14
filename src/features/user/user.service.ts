@@ -17,6 +17,7 @@ import { Payload } from 'src/common/utils';
 import { log } from 'console';
 import { instanceToPlain } from 'class-transformer';
 import { Wallet } from '../wallet/entities/wallet.entity';
+import { exceptionMessage, ExceptionType } from 'src/common/exception';
 
 @Injectable()
 export class UserService {
@@ -49,15 +50,15 @@ export class UserService {
 
       const user = await this.existAccount(loginUserDto.email,relations)
       if(!user){
-        throw new NotFoundException("User Not Found");
+        throw new NotFoundException(exceptionMessage(ExceptionType.NOT_FOUND,"User"))
       }
       const isMatch = await bcrypt.compare(loginUserDto.password,user.password)
       if(!isMatch){
-        throw new UnauthorizedException("Invalid credentials")
+        throw new UnauthorizedException(exceptionMessage(ExceptionType.VALIDATION,"Invalid credentials"))
       }
       const idRole = this.getIdRole(user,loginUserDto.role)
       if(idRole == 0){
-        throw new BadRequestException("User does not have the role")
+        throw new BadRequestException(exceptionMessage(ExceptionType.EMPTY,"User does not have the role"))
       }
       const payload = new Payload(
         user.id,
@@ -74,7 +75,7 @@ export class UserService {
   async saveRoles(email:string,role:UserRole){
     const user = await this.existAccount(email,{roles:true})
     if (!user){
-      throw new NotFoundException("User not Found")
+      throw new NotFoundException(exceptionMessage(ExceptionType.NOT_FOUND,"User"))
     }
     this.addRoles(role,user)
     await this.userRepository.save(user)
@@ -142,7 +143,7 @@ export class UserService {
     }
     const result = await this.userRepository.delete(where)
     if(result.affected! <= 0){
-      throw new NotFoundException('Cannot Delete the data')
+      throw new NotFoundException(exceptionMessage(ExceptionType.DEFAULT,"Delete the data"))
     }
     return true;
   }
@@ -185,10 +186,10 @@ export class UserService {
     }
 
     if (userRoles.includes(UserRole.ADMIN)){
-      throw new BadRequestException("This user cannot have multiple roles since its already ADMIN");
+      throw new BadRequestException(exceptionMessage(ExceptionType.EMPTY,"This user cannot have multiple roles since its already ADMIN"))
     }
     if(userRoles.length > 0 && newRole == UserRole.ADMIN){
-      throw new BadRequestException("This user cannot have roles ADMIN since its already have role")
+      throw new BadRequestException(exceptionMessage(ExceptionType.EMPTY,"This user cannot have roles ADMIN since its already have role"))
     }
   }
 

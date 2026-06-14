@@ -26,7 +26,6 @@ export class HttpExceptionFilter<T> implements ExceptionFilter {
 
     if (exception instanceof ValidationError){
       status = HttpStatus.BAD_REQUEST;
-      log("do exception")
       message = exception.children?.map((error) => ({
           field: error.property,
           error: Object.values(error.constraints ?? "").join(', '),

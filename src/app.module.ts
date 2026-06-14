@@ -14,6 +14,7 @@ import { DriverModule } from './features/driver/driver.module';
 import { AdminModule } from './features/admin/admin.module';
 import { AuthGuard } from './guards/auth.guard';
 import { WalletModule } from './features/wallet/wallet.module';
+import { ReviewModule } from './features/review/review.module';
 
 @Module({
   imports: [
@@ -50,6 +51,7 @@ import { WalletModule } from './features/wallet/wallet.module';
     DriverModule,
     AdminModule,
     WalletModule,
+    ReviewModule,
   ],
   controllers: [AppController],
   providers: [

@@ -7,6 +7,7 @@ import { Driver } from "../../driver/entities/driver.entity";
 import { Admin } from "../../admin/entities/admin.entity";
 import { Exclude } from "class-transformer";
 import { Wallet } from "src/features/wallet/entities/wallet.entity";
+import { AppReview } from "src/features/review/entities/review.entity";
 
 
 @Entity({name:"users"})
@@ -23,6 +24,11 @@ export class User extends BaseEntity {
     @Exclude()
     @Column({type:"text"})
     password!: string;
+
+    @OneToMany(() => AppReview, appReview => appReview.user,{
+        cascade:['insert']
+    })
+    reviews!:AppReview[]
 
     @OneToMany(() => UserRoles, userRoles => userRoles.user,{
         cascade:['insert',"update"],

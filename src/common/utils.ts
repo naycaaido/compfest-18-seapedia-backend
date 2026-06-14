@@ -23,10 +23,10 @@ export class Payload{
     }
 
     static toEntity(value:object): Payload{
-      const sub = value['user'].sub
-      const email = value['user'].email
-      const role =  value['user'].role
-      const userRoleId =  value['user'].user_role_id
+      const sub = value['user']?.sub ?? -1
+      const email = value['user']?.email ?? null
+      const role =  value['user']?.role ?? null
+      const userRoleId =  value['user']?.user_role_id ?? null
       return new Payload(sub,email,userRoleId,role)
     }
 }
