@@ -1,5 +1,6 @@
 import {
   CreateDateColumn,
+  DeleteDateColumn,
   UpdateDateColumn,
 } from 'typeorm';
 
@@ -10,4 +11,7 @@ export class BaseEntity {
 
   @UpdateDateColumn({ type: 'timestamptz' })
   readonly updatedAt!: Date;
+
+  @DeleteDateColumn()
+  deleted_at!:Date
 }

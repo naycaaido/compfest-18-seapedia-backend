@@ -15,6 +15,8 @@ import { AdminModule } from './features/admin/admin.module';
 import { AuthGuard } from './guards/auth.guard';
 import { WalletModule } from './features/wallet/wallet.module';
 import { ReviewModule } from './features/review/review.module';
+import { StoreModule } from './features/store/store.module';
+import { ImageModule } from './features/image/image.module';
 
 @Module({
   imports: [
@@ -45,6 +47,7 @@ import { ReviewModule } from './features/review/review.module';
         expiresIn:'1d'
       }
     }),
+    ImageModule,
     UserModule,
     BuyerModule,
     SellerModule,
@@ -52,6 +55,7 @@ import { ReviewModule } from './features/review/review.module';
     AdminModule,
     WalletModule,
     ReviewModule,
+    StoreModule
   ],
   controllers: [AppController],
   providers: [

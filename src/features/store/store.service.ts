@@ -1,0 +1,97 @@
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { CreateStoreDto } from './dto/create-store.dto';
+import { UpdateStoreDto } from './dto/update-store.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Store } from './entities/store.entity';
+import { Repository } from 'typeorm';
+import { log } from 'console';
+import { File } from '../image/constant';
+import { ImageService } from '../image/image.service';
+import { DirType, Payload } from 'src/common/utils';
+import path from 'path';
+import { exceptionMessage, ExceptionType } from 'src/common/exception';
+import { UserRole } from '../user/entities/role_user.enum';
+
+@Injectable()
+export class StoreService {
+
+  constructor(
+    @InjectRepository(Store)
+    private storeRepository:Repository<Store>,
+    private readonly imageService:ImageService
+  ) {}
+
+  async create(sellerId:number,createStoreDto: CreateStoreDto,file:File|null) {
+    let image_url:string | undefined = undefined
+
+    if (file){
+      image_url = this.imageService.makeFileName(file.fileName)
+    }
+  
+    try {
+      const store = this.storeRepository.create({
+        ...createStoreDto,
+        image_id: image_url ? path.join(DirType.STORE, image_url) : undefined,
+        seller:{
+          id:sellerId
+        }
+      })
+      const result = await this.storeRepository.save(store)
+      if (file){
+        await this.imageService.writeImage(file,image_url!,DirType.STORE)
+      }
+    return result
+    } catch (error) {
+      throw error
+    }
+  }
+
+  async findAll() {
+    return this.storeRepository.find();
+  }
+
+  async findOne(id: number) {
+    return await this.storeRepository.findOne({
+      where:{
+        id
+      }
+    })
+  }
+
+  update(id: number, updateStoreDto: UpdateStoreDto) {
+    return `This action updates a #${id} store`;
+  }
+
+   async remove(userRoleId:number) {
+      const store = await this.storeRepository.softDelete({seller:{
+        id:userRoleId
+      }})
+      if(store.affected! <= 0){
+        throw new NotFoundException(exceptionMessage(ExceptionType.DEFAULT,"Delete the data"))
+      }
+      return true;
+    }
+
+    async permanentDelete(id:number,payload:Payload){
+      const condition = payload.role == UserRole.ADMIN
+      const tempId = condition ? id : undefined
+      const tempRoleId = condition ? undefined : payload.userRoleId
+      const store = await this.storeRepository.findOne({
+        where:{
+            id:tempId,seller:{
+            id:tempRoleId
+            }
+        },
+        withDeleted:true
+      })
+      if (!store){
+        throw new NotFoundException(exceptionMessage(ExceptionType.NOT_FOUND,"Store is"))
+      }
+      
+      await this.storeRepository.delete({id:store?.id})
+      if (store.image_id){
+        await this.imageService.removeImage(store.image_id)
+      }
+      return true
+    }
+}

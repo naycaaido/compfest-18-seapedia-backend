@@ -13,20 +13,6 @@ export class Buyer extends BaseEntity {
     })
     delivery_address?:string
 
-    @Column('decimal', {
-    precision: 10,
-    scale: 8,
-    nullable:true
-    })
-    latitude?: number;
-
-    @Column('decimal', {
-    precision: 11,
-    scale: 8,
-    nullable:true
-    })
-    longitude?: number;
-
     @OneToOne(() => User, (user) => user.buyer,{
         onDelete:'CASCADE',
     })
