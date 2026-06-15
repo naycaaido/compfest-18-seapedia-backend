@@ -9,7 +9,6 @@ import { MultipartInterceptor } from 'src/interceptors/multipart.interceptor';
 import { MultipartData } from 'src/decorators/multipart-data.decorator';
 import { PayloadJWT } from 'src/decorators/payload.decorator';
 import { Payload } from 'src/common/utils';
-import { log } from 'console';
 import { SuccessMessage } from 'src/decorators/success-message.decorator';
 import { successMessageGlobal, SuccessMessageType } from 'src/common/success';
 
@@ -33,6 +32,14 @@ export class StoreController {
   @Get()
   findAll() {
     return this.storeService.findAll();
+  }
+
+  @UserRoleDecorator(UserRole.SELLER)
+  @Get('seller')
+  findOneByPayload(
+    @PayloadJWT() payload:Payload
+  ) {
+    return this.storeService.findOneByPayload(payload);
   }
 
   @Public()

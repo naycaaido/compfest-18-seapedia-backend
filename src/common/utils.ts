@@ -38,5 +38,6 @@ export const PublicUserRoles = [
 ] as const;
 
 export const enum DirType {
-   STORE = 'store'
+   STORE = 'store',
+   PRODUCT = 'products'
 }

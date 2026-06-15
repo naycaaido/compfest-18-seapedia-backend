@@ -1,6 +1,7 @@
 import { BadRequestException, CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
 import { plainToInstance, type ClassConstructor } from 'class-transformer';
 import { validateOrReject } from 'class-validator';
+import { log } from 'console';
 import { FastifyRequest } from 'fastify';
 import { exceptionMessage, ExceptionType } from 'src/common/exception';
 import { File } from 'src/features/image/constant';
@@ -25,7 +26,17 @@ export class MultipartInterceptor implements NestInterceptor {
     try {
       for await (const part of request.parts()){
         if (part.type === 'field'){
-          data[part.fieldname] = part.value
+          let value: any = part.value;
+
+          if (typeof value === 'string' &&
+            (value.startsWith('{') || value.startsWith('['))) {
+              try {
+                value = JSON.parse(value);
+              } catch {
+                // Not valid JSON, keep original string
+              }
+            }
+          data[part.fieldname] = value
         } else if(part.type === 'file' && part.fieldname == this.fileFieldName){
           const chunks: any[] = []
           for await (const chunk of part.file){

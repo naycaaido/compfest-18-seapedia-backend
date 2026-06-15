@@ -1,5 +1,5 @@
 import { BaseEntity } from "src/common/base_entity";
-import { Column, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn, RelationId } from "typeorm";
 import { User } from "../../user/entities/user.entity";
 import { Store } from "src/features/store/entities/store.entity";
 
@@ -8,10 +8,12 @@ export class Seller extends BaseEntity {
     @PrimaryGeneratedColumn()
     id!:number
 
-    @OneToOne(() => Store, (store) => store.seller,{
+    @OneToMany(() => Store, (store) => store.seller,{
         cascade:['insert']
     })
-    store?:Store
+    store?:Store[]
+    @RelationId((seller:Seller) => seller.store)
+    store_id!:number
 
     @OneToOne(() => User, (user) => user.seller,{
         onDelete:'CASCADE',

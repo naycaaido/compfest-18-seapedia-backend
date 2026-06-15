@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateStoreDto } from './dto/create-store.dto';
 import { UpdateStoreDto } from './dto/update-store.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -46,15 +46,45 @@ export class StoreService {
     }
   }
 
+  async findOneByPayload(payload:Payload){
+    if (payload.role != UserRole.SELLER){
+      throw new ForbiddenException(exceptionMessage(ExceptionType.FORBIDDEN,'Access'))
+    }
+    return await this.findBySellerId(payload.userRoleId)
+  }
+
+  async findBySellerId(id:number){
+    return await this.storeRepository.findOne({
+      where:{
+        seller:{
+          id:id
+        }
+      },
+      relations:[
+        'products.images',
+        'products.types.items',
+      ]
+    })
+  }
+
   async findAll() {
-    return this.storeRepository.find();
+    return this.storeRepository.find({
+      relations:[
+        'seller'
+      ]
+    });
   }
 
   async findOne(id: number) {
     return await this.storeRepository.findOne({
       where:{
         id
-      }
+      },
+      relations:[
+        'seller',
+        'products.images',
+        'products.types.items'
+      ]
     })
   }
 
@@ -74,18 +104,17 @@ export class StoreService {
 
     async permanentDelete(id:number,payload:Payload){
       const condition = payload.role == UserRole.ADMIN
-      const tempId = condition ? id : undefined
       const tempRoleId = condition ? undefined : payload.userRoleId
       const store = await this.storeRepository.findOne({
         where:{
-            id:tempId,seller:{
+            id:id,seller:{
             id:tempRoleId
             }
         },
         withDeleted:true
       })
       if (!store){
-        throw new NotFoundException(exceptionMessage(ExceptionType.NOT_FOUND,"Store is"))
+        throw new NotFoundException(exceptionMessage(ExceptionType.NOT_FOUND,"Store"))
       }
       
       await this.storeRepository.delete({id:store?.id})

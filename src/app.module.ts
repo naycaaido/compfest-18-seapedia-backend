@@ -17,6 +17,11 @@ import { WalletModule } from './features/wallet/wallet.module';
 import { ReviewModule } from './features/review/review.module';
 import { StoreModule } from './features/store/store.module';
 import { ImageModule } from './features/image/image.module';
+import { ProductModule } from './features/product/product/product.module';
+import { ProductCategoryModule } from './features/product/product-category/product-category.module';
+import { ProductImageModule } from './features/product/product-image/product-image.module';
+import { ProductTypeModule } from './features/product/product-type/product-type.module';
+import { ProductTypeItemModule } from './features/product/product-type-item/product-type-item.module';
 
 @Module({
   imports: [
@@ -55,7 +60,12 @@ import { ImageModule } from './features/image/image.module';
     AdminModule,
     WalletModule,
     ReviewModule,
-    StoreModule
+    StoreModule,
+    ProductModule,
+    ProductCategoryModule,
+    ProductImageModule,
+    ProductTypeModule,
+    ProductTypeItemModule
   ],
   controllers: [AppController],
   providers: [

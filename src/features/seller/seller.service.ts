@@ -29,8 +29,17 @@ export class SellerService {
     return `This action returns all seller`;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} seller`;
+  async findOne(id: number) {
+    return await this.sellerRepository.findOne({
+      where:{
+        id
+      },
+      loadRelationIds:{
+        relations:[
+          "store"
+        ]
+      }
+    });
   }
 
   update(id: number, updateSellerDto: UpdateSellerDto) {
