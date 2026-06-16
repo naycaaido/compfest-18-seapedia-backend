@@ -63,7 +63,7 @@ export class ProductService {
           image_id:path.join(DirType.PRODUCT,imageId)
         })),
       })
-      log(product)
+      
       await queryRunner.manager.save(product)
 
       // Write File before commit

@@ -21,7 +21,7 @@ export class ProductController {
   @SuccessMessage(successMessageGlobal(SuccessMessageType.CREATE,"Product"))
   @Post()
   @UserRoleDecorator(UserRole.SELLER)
-  @UseInterceptors(new MultipartInterceptor(CreateProductDto,'product_image'))
+  @UseInterceptors(new MultipartInterceptor('product_image',CreateProductDto))
   create(
     @MultipartData('product_image') {dto,file},
     @PayloadJWT() payload:Payload

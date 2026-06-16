@@ -17,7 +17,7 @@ export class StoreController {
   constructor(private readonly storeService: StoreService) {}
 
   @UserRoleDecorator(UserRole.SELLER)
-  @UseInterceptors(new MultipartInterceptor(CreateStoreDto,'store_image'))
+  @UseInterceptors(new MultipartInterceptor('store_image',CreateStoreDto))
   @SuccessMessage(successMessageGlobal(SuccessMessageType.CREATE,'store'))
   @Post()
   create(

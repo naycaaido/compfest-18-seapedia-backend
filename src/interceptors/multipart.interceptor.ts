@@ -9,10 +9,10 @@ import { File } from 'src/features/image/constant';
 @Injectable()
 export class MultipartInterceptor implements NestInterceptor {
 
-  dto!:ClassConstructor<any>
+  dto?:ClassConstructor<any>
   fileFieldName!:string
 
-  constructor(dto:ClassConstructor<any>,fileFieldName:string){
+  constructor(fileFieldName:string,dto?:ClassConstructor<any>){
     this.dto = dto
     this.fileFieldName = fileFieldName
   }
@@ -52,9 +52,11 @@ export class MultipartInterceptor implements NestInterceptor {
           part.file.resume()
         }
       }
-      const model:object = plainToInstance(this.dto,data)
-      await validateOrReject(model);
-      (request as any).dto = model;
+      if (this.dto){
+        const model:object = plainToInstance(this.dto,data)
+        await validateOrReject(model);
+        (request as any).dto = model;
+      }
       (request as any).files = files;
     } catch (error) {
       if (error instanceof Error) {

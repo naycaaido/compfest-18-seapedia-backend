@@ -5,6 +5,9 @@ import { Seller } from "src/features/seller/entities/seller.entity";
 import { AfterSoftRemove, Column, Entity, Index, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity({name:"stores"})
+@Index('idx_store_phone_active',['phone_number'],{ unique: true, where: `"deleted_at" IS NULL` })
+@Index('idx_store_name_active',['name'],{ unique: true, where: `"deleted_at" IS NULL` })
+@Index('idx_store_seller_active',['seller'],{ unique: true, where: `"deleted_at" IS NULL` })
 export class Store extends BaseEntity {
 
     @PrimaryGeneratedColumn()
