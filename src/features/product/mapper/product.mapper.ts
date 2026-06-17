@@ -3,6 +3,8 @@ import { CreateProductDto } from "../product/dto/create-product.dto";
 import { UpdateProductDto } from "../product/dto/update-product.dto";
 import { Product } from "../product/entities/product.entity";
 import { ProductType } from "../product-type/entities/product-type.entity";
+import { CreateProductTypeDto } from "../product-type/dto/create-product-type.dto";
+import { UpdateProductTypeDto } from "../product-type/dto/update-product-type.dto";
 
 export function mapToProduct(dto:CreateProductDto | UpdateProductDto):DeepPartial<Product>{
     return {
@@ -36,4 +38,21 @@ export function mapToProductTypesFromProduct(dto:CreateProductDto | UpdateProduc
                 price:item.price
                 }))
             }))
+}
+
+export function mapToProductTypeFromProduct(dto:CreateProductTypeDto | UpdateProductTypeDto): DeepPartial<ProductType>{
+      return {
+            name:dto.name,
+            is_multiple:dto.is_multiple,
+            is_required:dto.is_required,
+            product:{
+                id:dto.product_id
+            },
+            items: (dto.items ?? []).map(item => ({
+                name:item.name,
+                stock:item.stock,
+                price:item.price
+                }))
+        
+      }
 }

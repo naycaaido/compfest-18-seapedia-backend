@@ -15,7 +15,7 @@ import { ProductCategoryModule } from '../product-category/product-category.modu
     TypeOrmModule.forFeature([
       Product
     ]),
-    ProductTypeModule,
+    forwardRef(() => ProductTypeModule),
     SellerModule,
     StoreModule,
     ImageModule,

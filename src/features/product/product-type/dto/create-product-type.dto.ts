@@ -1,6 +1,6 @@
 import { PickType } from "@nestjs/mapped-types";
 import { Type } from "class-transformer";
-import { IsArray, IsBoolean, IsNotEmpty, IsNumber, IsString, ValidateNested } from "class-validator";
+import { ArrayNotEmpty, IsArray, IsBoolean, IsNotEmpty, IsNumber, IsString, ValidateNested } from "class-validator";
 import { CreateProductTypeItemFromProductDto } from "../../product-type-item/dto/create-product-type-item.dto";
 
 export class CreateProductTypeDto {
@@ -24,6 +24,7 @@ export class CreateProductTypeDto {
     is_required!:boolean
 
     @IsArray()
+    @ArrayNotEmpty()
     @ValidateNested({each:true})
     @Type(() => CreateProductTypeItemFromProductDto)
     items!: CreateProductTypeItemFromProductDto[]

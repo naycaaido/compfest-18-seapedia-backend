@@ -30,10 +30,11 @@ export class ProductService {
     private productRepository: Repository<Product>,
     private readonly sellerService:SellerService,
     private readonly imageService:ImageService,
+    @Inject(forwardRef(() => ProductTypeService))
     private readonly productTypeService:ProductTypeService,
     private readonly storeService:StoreService,
     @Inject(forwardRef(() => ProductCategoryService))
-    private productCategoryService:ProductCategoryService,
+    private readonly productCategoryService:ProductCategoryService,
     private readonly dataSource:DataSource
     
   ) {}
@@ -124,13 +125,16 @@ export class ProductService {
     });
   }
 
-  async findOne(id: number) {
+  async findOne(id: number, relations:boolean = true,seller?:object) {
      return await this.productRepository.find({
       cache:true,
       where:{
-        id
+        id,
+        store:{
+          seller:seller
+        }
       },
-      relations:ProductService.productRelation
+      relations:relations ? ProductService.productRelation : undefined
     });
   }
 

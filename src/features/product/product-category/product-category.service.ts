@@ -23,7 +23,7 @@ export class ProductCategoryService {
     if (condition){
       const existAll = await this.productService.existBySeller(payload.userRoleId,createProductCategoryDto.product_ids)
       if (!existAll){
-        throw new NotFoundException(exceptionMessage(ExceptionType.NOT_FOUND,'Access product id'));
+        throw new NotFoundException(exceptionMessage(ExceptionType.FORBIDDEN,'Access product id'));
       }
     }
 
@@ -83,7 +83,7 @@ export class ProductCategoryService {
     if (condition){
       const existAll = await this.productService.existBySeller(payload.userRoleId,updateProductCategoriesDto.product_ids!)
       if (!existAll){
-        throw new NotFoundException(exceptionMessage(ExceptionType.NOT_FOUND,'Access product id'));
+        throw new NotFoundException(exceptionMessage(ExceptionType.FORBIDDEN,'Access product id'));
       }
     }
 
