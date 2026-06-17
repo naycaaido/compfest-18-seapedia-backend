@@ -20,7 +20,7 @@ export const options: DataSourceOptions & SeederOptions = {
   // Supabase
   // url: process.env.DATABASE_URL,
   // ssl: { rejectUnauthorized: false },
-  seeds: [join(process.cwd(), 'src', '**', '*.seeder.{ts,js}')],
+  seeds: [join(process.cwd(), 'src', '**', '*.seed.{ts,js}')],
   synchronize: false,
   entities: [join(process.cwd(), 'src', '**', '*.entity.{ts,js}')],
   migrations: ['src/database/migrations/*-migration.ts'],

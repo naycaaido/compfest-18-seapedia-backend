@@ -22,7 +22,7 @@
     "migration:create": "npx ts-node -P ./tsconfig.json -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:create ./src/database/migrations/migration",
     "migration:run": "npx ts-node -P ./tsconfig.json -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:run -d ./src/config/db.config.ts",
     "migration:revert": "npx ts-node -P ./tsconfig.json -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:revert -d ./src/config/db.config.ts",
-    "seed": "ts-node -r tsconfig-paths/register src/database/seeder/main.seeder.ts"
+    "seed": "ts-node -r tsconfig-paths/register src/database/seed/main.seed.ts"
   },
   "dependencies": {
     "@fastify/multipart": "^10.0.0",
