@@ -63,6 +63,7 @@ export class StoreService {
       relations:[
         'products.images',
         'products.types.items',
+        'products.category'
       ]
     })
   }
@@ -83,7 +84,8 @@ export class StoreService {
       relations:[
         'seller',
         'products.images',
-        'products.types.items'
+        'products.types.items',
+        'products.category'
       ]
     })
   }

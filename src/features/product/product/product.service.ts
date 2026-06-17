@@ -1,9 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ForbiddenException, forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Product } from './entities/product.entity';
-import { DataSource, FindOptionsWhere, ILike, Repository } from 'typeorm';
+import { DataSource, FindOptionsWhere, ILike, In, Repository } from 'typeorm';
 import { log } from 'console';
 import { File } from 'src/features/image/constant';
 import { DirType, Payload } from 'src/common/utils';
@@ -19,6 +19,8 @@ import { UserRole } from 'src/features/user/entities/role_user.enum';
 import { StoreService } from 'src/features/store/store.service';
 import path from 'path';
 import { types } from 'util';
+import { ProductCategoryService } from '../product-category/product-category.service';
+import { UpdateProductCategoriesDto } from '../product-category/dto/update-product-categories.dto';
 
 
 @Injectable()
@@ -30,11 +32,19 @@ export class ProductService {
     private readonly imageService:ImageService,
     private readonly productTypeService:ProductTypeService,
     private readonly storeService:StoreService,
+    @Inject(forwardRef(() => ProductCategoryService))
+    private productCategoryService:ProductCategoryService,
     private readonly dataSource:DataSource
     
-  ) {
-    
-  }
+  ) {}
+
+  private static readonly productRelation = [
+      'images',
+      'types.items',
+      'store',
+      'category'
+  ];
+
   async create(createProductDto: CreateProductDto,files:File[],payload:Payload) {
     // Experiment Transactions
     const queryRunner = this.dataSource.createQueryRunner()
@@ -54,6 +64,13 @@ export class ProductService {
         throw new NotFoundException(exceptionMessage(ExceptionType.NOT_FOUND, 'Store'));
       }
       const storeId = store.id
+      if(createProductDto.category_id){
+        const isExist = await this.productCategoryService.findOneBySellerId(payload.userRoleId,createProductDto.category_id)
+
+        if (!isExist){
+          throw new ForbiddenException(exceptionMessage(ExceptionType.FORBIDDEN,'Category Id is'))
+        }
+      }
       const product = this.productRepository.create({
         ...mapToProduct(createProductDto),
         store: {
@@ -103,11 +120,7 @@ export class ProductService {
     return await this.productRepository.find({
       where:where,
       cache:true,
-      relations:[
-        'images',
-        'types.items',
-        'store'
-      ]
+      relations:ProductService.productRelation
     });
   }
 
@@ -117,12 +130,33 @@ export class ProductService {
       where:{
         id
       },
-      relations:[
-        'images',
-        'types.items',
-        'store'
-      ]
+      relations:ProductService.productRelation
     });
+  }
+
+  async existBySeller(sellerId:number,productIds:number[]){
+    const count = await this.productRepository.countBy({
+      id:In(productIds),
+      store:{
+        seller:{
+          id:sellerId
+        }
+      }
+    })
+    return count == productIds.length
+  }
+
+  async updateCategoriesId(categoryId:number,updateProductCategoriesDto : UpdateProductCategoriesDto){
+    await this.productRepository.update(
+      {
+        id:In(updateProductCategoriesDto.product_ids!)
+      },
+      {
+        category:{
+          id:categoryId
+        }
+      }
+    )
   }
 
   async update(id:number,updateProductDto: UpdateProductDto,payload:Payload) {
@@ -135,16 +169,18 @@ export class ProductService {
           }
         }
       },
-      relations:[
-        'images',
-        'types.items',
-        'store'
-      ]
+      relations:ProductService.productRelation
     })
     if(!product){
       throw new NotFoundException(exceptionMessage(ExceptionType.NOT_FOUND,'Product'))
     }
-    
+    if(updateProductDto.category_id){
+        const isExist = await this.productCategoryService.findOneBySellerId(payload.userRoleId,updateProductDto.category_id)
+
+        if (!isExist){
+          throw new ForbiddenException(exceptionMessage(ExceptionType.FORBIDDEN,'Category Id is'))
+        }
+      }
     const updatedProduct = this.productRepository.merge(
       product,
       mapToProductMerge(updateProductDto),
