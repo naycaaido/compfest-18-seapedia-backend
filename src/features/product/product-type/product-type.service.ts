@@ -116,6 +116,19 @@ export class ProductTypeService {
     return true;
   }
 
+  async existByProductItemTypeId(id:number,sellerId:number){
+    return await this.productTypeRepository.existsBy({
+      id,
+      product:{
+        store:{
+          seller:{
+            id:sellerId
+          }
+        }
+      }
+    })
+  }
+
   async removeByProductId(productId:number){
     const result = await this.productTypeRepository.delete({
       product:{

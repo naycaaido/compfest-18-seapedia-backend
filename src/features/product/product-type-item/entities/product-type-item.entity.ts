@@ -23,5 +23,5 @@ export class ProductTypeItem extends BaseEntity {
     })
     @Index("idx_product_type_item_product_type_id")
     @JoinColumn({name:'product_type_id'})
-    type!:ProductType[]
+    type!:ProductType
 }
