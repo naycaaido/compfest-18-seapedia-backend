@@ -6,7 +6,7 @@ import { Seller } from "../../seller/entities/seller.entity";
 import { Driver } from "../../driver/entities/driver.entity";
 import { Admin } from "../../admin/entities/admin.entity";
 import { Exclude } from "class-transformer";
-import { Wallet } from "src/features/wallet/entities/wallet.entity";
+import { Wallet } from "src/features/wallet/wallet/entities/wallet.entity";
 import { AppReview } from "src/features/review/entities/review.entity";
 
 

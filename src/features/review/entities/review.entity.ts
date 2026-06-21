@@ -1,8 +1,9 @@
+import { BaseEntity } from "src/common/base_entity";
 import { User } from "src/features/user/entities/user.entity";
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity({name:"app_review"})
-export class AppReview {
+export class AppReview extends BaseEntity {
     @PrimaryGeneratedColumn()
     id!:number
 

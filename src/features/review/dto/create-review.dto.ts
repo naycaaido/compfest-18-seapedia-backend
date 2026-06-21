@@ -11,7 +11,7 @@ export class CreateReviewDto {
     
     @IsOptional()
     @IsInt()
-    user_id!:number
+    user_id?:number
 
     @IsNotEmpty()
     @IsInt()

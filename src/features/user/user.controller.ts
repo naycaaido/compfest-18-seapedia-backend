@@ -41,6 +41,7 @@ export class UserController {
     return instanceToPlain(this.userService.saveRoles(payload.email,addRoleUser.role));
   }
 
+  @UserRoleDecorator(UserRole.ADMIN)
   @Get()
   findAll() {
     return this.userService.findAll();
@@ -66,6 +67,7 @@ export class UserController {
   //   return this.userService.update(+id, updateUserDto);
   // }
 
+  @UserRoleDecorator(UserRole.ADMIN)
   @Delete(':id')
   remove(
     @PayloadJWT() payload:Payload,

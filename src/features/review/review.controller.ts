@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
 import { ReviewService } from './review.service';
 import { CreateReviewDto } from './dto/create-review.dto';
 import { UpdateReviewDto } from './dto/update-review.dto';
@@ -6,6 +6,7 @@ import { Public } from 'src/decorators/public.decorator';
 import { instanceToPlain } from 'class-transformer';
 import { SuccessMessage } from 'src/decorators/success-message.decorator';
 import { successMessageGlobal, SuccessMessageType } from 'src/common/success';
+import { AllQueryReviewDto } from './dto/all-query-review.dto';
 
 
 @Public()
@@ -22,8 +23,10 @@ export class ReviewController {
 
   @SuccessMessage(successMessageGlobal(SuccessMessageType.RETRIEVE,"reviews"))
   @Get()
-  findAll() {
-    return instanceToPlain(this.reviewService.findAll());
+  findAll(
+      @Query() dto:AllQueryReviewDto
+  ) {
+    return instanceToPlain(this.reviewService.findAll(dto));
   }
 
   @SuccessMessage(successMessageGlobal(SuccessMessageType.RETRIEVE,"review"))

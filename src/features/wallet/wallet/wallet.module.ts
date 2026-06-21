@@ -4,6 +4,7 @@ import { WalletController } from './wallet.controller';
 
 @Module({
   controllers: [WalletController],
+  imports:[],
   providers: [WalletService],
 })
 export class WalletModule {}

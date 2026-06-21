@@ -1,6 +1,6 @@
 import { User } from "src/features/user/entities/user.entity";
 import { Column, Entity, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
-import { WalletTransactions } from "./wallet_transactions.entity";
+import { WalletTransactions } from "../../wallet-transaction/entities/wallet-transaction.entity";
 
 @Entity({name:"wallets"})
 export class Wallet {

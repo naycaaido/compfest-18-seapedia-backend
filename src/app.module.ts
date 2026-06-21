@@ -13,7 +13,7 @@ import { SellerModule } from './features/seller/seller.module';
 import { DriverModule } from './features/driver/driver.module';
 import { AdminModule } from './features/admin/admin.module';
 import { AuthGuard } from './guards/auth.guard';
-import { WalletModule } from './features/wallet/wallet.module';
+import { WalletModule } from './features/wallet/wallet/wallet.module';
 import { ReviewModule } from './features/review/review.module';
 import { StoreModule } from './features/store/store.module';
 import { ImageModule } from './features/image/image.module';
@@ -22,6 +22,7 @@ import { ProductCategoryModule } from './features/product/product-category/produ
 import { ProductImageModule } from './features/product/product-image/product-image.module';
 import { ProductTypeModule } from './features/product/product-type/product-type.module';
 import { ProductTypeItemModule } from './features/product/product-type-item/product-type-item.module';
+import { WalletTransactionModule } from './features/wallet/wallet-transaction/wallet-transaction.module';
 
 @Module({
   imports: [
@@ -65,7 +66,8 @@ import { ProductTypeItemModule } from './features/product/product-type-item/prod
     ProductCategoryModule,
     ProductImageModule,
     ProductTypeModule,
-    ProductTypeItemModule
+    ProductTypeItemModule,
+    WalletTransactionModule
   ],
   controllers: [AppController],
   providers: [

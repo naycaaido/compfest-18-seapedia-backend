@@ -121,6 +121,7 @@ export class ProductService {
     return await this.productRepository.find({
       where:where,
       cache:true,
+      take:findProductDto.limit,
       relations:ProductService.productRelation
     });
   }

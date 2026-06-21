@@ -3,10 +3,11 @@ import { CreateReviewDto } from './dto/create-review.dto';
 import { UpdateReviewDto } from './dto/update-review.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { AppReview } from './entities/review.entity';
-import { Repository } from 'typeorm';
+import { FindOptionsWhere, Repository } from 'typeorm';
 import { log } from 'console';
 import { Payload } from 'src/common/utils';
 import { exceptionMessage, ExceptionType } from 'src/common/exception';
+import { AllQueryReviewDto } from './dto/all-query-review.dto';
 
 @Injectable()
 export class ReviewService {
@@ -18,15 +19,17 @@ export class ReviewService {
   async create(createReviewDto: CreateReviewDto,) {
     const review = this.appReviewRepository.create({
       ...createReviewDto,
-      user:{
-        id:createReviewDto.user_id
-      }
     })
     return await this.appReviewRepository.save(review)
   }
 
-  async findAll() {
-    return await this.appReviewRepository.find();
+  async findAll(dto:AllQueryReviewDto) {
+    return await this.appReviewRepository.find({
+      take:dto.limit,
+      order:{
+        createdAt:'DESC'
+      }
+    });
   }
 
   async findOne(id: number) {

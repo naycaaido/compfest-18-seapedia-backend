@@ -1,6 +1,6 @@
 import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
-import { Wallet } from "./wallet.entity";
-import { WalletTransactionType } from "./wallet_transaction_type.enum";
+import { Wallet } from "../../wallet/entities/wallet.entity";
+import { WalletTransactionType } from "./wallet-transaction-type.enum";
 import { User } from "src/features/user/entities/user.entity";
 
 @Entity({name:"wallet_transactions"})
@@ -28,4 +28,7 @@ export class WalletTransactions{
     @ManyToOne(() => Wallet, wallet => wallet.transactions)
     @JoinColumn({name:'wallet_id'})
     wallet!:Wallet
+
+    // Relation ke order
+    // @ManyToOne(() => Order)
 }

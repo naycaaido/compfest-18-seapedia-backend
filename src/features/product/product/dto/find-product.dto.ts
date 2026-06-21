@@ -10,4 +10,9 @@ export class FindProductDto{
     @IsOptional()
     @IsString()
     name?:string
+
+    @IsOptional()
+    @Type(() => Number)
+    @IsNumber()
+    limit?:number
 }

@@ -16,7 +16,7 @@ import { LoginUserDto } from './dto/login-user.dto';
 import { Payload } from 'src/common/utils';
 import { log } from 'console';
 import { instanceToPlain } from 'class-transformer';
-import { Wallet } from '../wallet/entities/wallet.entity';
+import { Wallet } from '../wallet/wallet/entities/wallet.entity';
 import { exceptionMessage, ExceptionType } from 'src/common/exception';
 
 @Injectable()
