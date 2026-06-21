@@ -23,6 +23,10 @@ import { ProductImageModule } from './features/product/product-image/product-ima
 import { ProductTypeModule } from './features/product/product-type/product-type.module';
 import { ProductTypeItemModule } from './features/product/product-type-item/product-type-item.module';
 import { WalletTransactionModule } from './features/wallet/wallet-transaction/wallet-transaction.module';
+import { CartModule } from './features/cart/cart/cart.module';
+import { CartItemModule } from './features/cart/cart-item/cart-item.module';
+import { CartProductTypeModule } from './features/cart/cart-product-type/cart-product-type.module';
+import { CartProductTypeItemModule } from './features/cart/cart-product-type-item/cart-product-type-item.module';
 
 @Module({
   imports: [
@@ -67,7 +71,11 @@ import { WalletTransactionModule } from './features/wallet/wallet-transaction/wa
     ProductImageModule,
     ProductTypeModule,
     ProductTypeItemModule,
-    WalletTransactionModule
+    WalletTransactionModule,
+    CartModule,
+    CartItemModule,
+    CartProductTypeModule,
+    CartProductTypeItemModule
   ],
   controllers: [AppController],
   providers: [

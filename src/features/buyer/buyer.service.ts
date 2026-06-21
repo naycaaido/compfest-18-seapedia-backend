@@ -21,6 +21,11 @@ export class BuyerService {
     return this.buyerRepository.create({
       user:{
         id:userId
+      },
+      cart:{
+        buyer:{
+          id:userId
+        }
       }
     })
   }

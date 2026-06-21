@@ -115,6 +115,10 @@ export class ProductService {
       }
     }
 
+    if(findProductDto.is_available){
+      where.is_available = findProductDto.is_available
+    }
+
     if (findProductDto.name){
       where.name = ILike(`%${findProductDto.name}%`)
     }
@@ -127,7 +131,7 @@ export class ProductService {
   }
 
   async findOne(id: number, relations:boolean = true,seller?:object) {
-     return await this.productRepository.find({
+     return await this.productRepository.findOne({
       cache:true,
       where:{
         id,

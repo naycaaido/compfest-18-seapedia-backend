@@ -13,6 +13,9 @@ import { ProductTypeModule } from '../product-type/product-type.module';
     ]),
     ProductTypeModule
   ],
+  exports:[
+    ProductTypeItemService
+  ],
   providers: [ProductTypeItemService],
 })
 export class ProductTypeItemModule {}

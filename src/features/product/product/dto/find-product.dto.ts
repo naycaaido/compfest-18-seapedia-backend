@@ -8,6 +8,11 @@ export class FindProductDto{
     store_id?:number
 
     @IsOptional()
+    @Type(() =>Boolean)
+    @IsBoolean()
+    is_available?:boolean
+
+    @IsOptional()
     @IsString()
     name?:string
 

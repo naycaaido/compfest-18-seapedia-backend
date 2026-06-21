@@ -3,7 +3,7 @@ import { CreateProductTypeItemDto } from './dto/create-product-type-item.dto';
 import { UpdateProductTypeItemDto } from './dto/update-product-type-item.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ProductTypeItem } from './entities/product-type-item.entity';
-import { In, Repository } from 'typeorm';
+import { FindOperator, In, Repository } from 'typeorm';
 import { exceptionMessage, ExceptionType } from 'src/common/exception';
 import { Payload } from 'src/common/utils';
 import { log } from 'console';
@@ -103,15 +103,21 @@ export class ProductTypeItemService {
     return true;
   }
 
+  async findBy(value: number[]){
+    return await this.productTypeItemRepository.findBy({
+      id:In(value)
+    })
+  }
+
   private checkNumber(num:number){
       if(isNaN(num)){
         throw new BadRequestException(exceptionMessage(ExceptionType.BAD_REQUEST,'Id is not recognizable'))
       }
-    }
+  }
   
-    private checkExist(exist:boolean){
+  private checkExist(exist:boolean){
       if (!exist){
         throw new ForbiddenException(exceptionMessage(ExceptionType.FORBIDDEN,'Access Product Id')); 
       }
-    }
+  }
 }
