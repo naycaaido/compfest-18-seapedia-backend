@@ -10,9 +10,6 @@ export class Wallet {
     @Column({name:"balance",default:0,type:"int"})
     balance!:number
 
-    @OneToMany(() => WalletTransactions, walletTransactions => walletTransactions.wallet)
-    transactions!:WalletTransactions[]
-
     @OneToOne(() => User, (user) => user.wallet,{
         onDelete:'CASCADE'
     })

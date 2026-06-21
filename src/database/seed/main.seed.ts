@@ -9,12 +9,12 @@ import ProductTypeSeeder from './5_product_type.seed';
 import ProductTypeItemSeeder from './6_product_type_item.seed';
 import ProductSeeder from './4_product.seed';
 import ProductImageSeeder from './7_product_image.seed';
-import UserRolesSeeder from './1.0_user_roles.seed';
 import SellerSeeder from './1.1_seller.seed';
 import BuyerSeeder from './1.2_buyer.seed';
 import DriverSeeder from './1.3_driver.seed';
 import AdminSeeder from './1.4_admin.seed';
 import CartSeeder from './8_cart.seed';
+import WalletTransactionSeeder from './9_wallet_transaction.seed';
 
 export interface Seeder {
     run(manager:EntityManager) :Promise<any>
@@ -25,7 +25,6 @@ export interface Seeder {
     await dataSource.transaction(async(manager) =>{
         await new ReviewSeeder().run(manager)
         await new UserSeeder().run(manager)
-        await new UserRolesSeeder().run(manager)
         await new SellerSeeder().run(manager)
         await new BuyerSeeder().run(manager)
         await new DriverSeeder().run(manager)
@@ -37,5 +36,6 @@ export interface Seeder {
         await new ProductTypeItemSeeder().run(manager)
         await new ProductImageSeeder().run(manager)
         await new CartSeeder().run(manager)
+        await new WalletTransactionSeeder().run(manager)
     })
 })();

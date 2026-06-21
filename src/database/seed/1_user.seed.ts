@@ -12,7 +12,7 @@ export default class UserSeeder implements Seeder {
         const repository = manager.getRepository(User)
         const password = '12345678'
         const hashPassword = await bcrypt.hash(password,10)
-        await repository.insert([
+        await repository.save([
             {
                 full_name:"User 1",
                 email:"user1@gmail.com",
@@ -24,7 +24,10 @@ export default class UserSeeder implements Seeder {
                     {
                         role:UserRole.BUYER
                     }
-                ]
+                ],
+                wallet:{
+                    balance:40_000
+                }
             },
             {
                 full_name:"User 2",
@@ -34,7 +37,10 @@ export default class UserSeeder implements Seeder {
                     {
                         role:UserRole.SELLER,
                     }
-                ]
+                ],
+                wallet:{
+                    balance:0
+                }
             },
             {
                 full_name:"Admin 1",
@@ -44,7 +50,10 @@ export default class UserSeeder implements Seeder {
                     {
                         role:UserRole.ADMIN,
                     }
-                ]
+                ],
+                wallet:{
+                    balance:100_000_000
+                }
             }
         ])
     }

@@ -37,6 +37,7 @@ export class CartController {
     return this.cartService.findOne(+id);
   }
 
+  @SuccessMessage(successMessageGlobal(SuccessMessageType.UPDATE,'Cart'))
   @Patch(':id')
   update(
     @Param('id') id: string,

@@ -22,12 +22,8 @@ export class WalletTransactions{
     sender!:User
 
     @ManyToOne(() => User)
-    @JoinColumn({ name: 'receiver_id' })
-    receiver!: User;
-
-    @ManyToOne(() => Wallet, wallet => wallet.transactions)
-    @JoinColumn({name:'wallet_id'})
-    wallet!:Wallet
+    @JoinColumn({ name: 'receiver_id'})
+    receiver?: User;
 
     // Relation ke order
     // @ManyToOne(() => Order)
