@@ -27,6 +27,7 @@ import { CartModule } from './features/cart/cart/cart.module';
 import { CartItemModule } from './features/cart/cart-item/cart-item.module';
 import { CartProductTypeModule } from './features/cart/cart-product-type/cart-product-type.module';
 import { CartProductTypeItemModule } from './features/cart/cart-product-type-item/cart-product-type-item.module';
+import { AddressModule } from './features/address/address.module';
 
 @Module({
   imports: [
@@ -75,7 +76,8 @@ import { CartProductTypeItemModule } from './features/cart/cart-product-type-ite
     CartModule,
     CartItemModule,
     CartProductTypeModule,
-    CartProductTypeItemModule
+    CartProductTypeItemModule,
+    AddressModule
   ],
   controllers: [AppController],
   providers: [

@@ -1,18 +1,20 @@
 import { BaseEntity } from "src/common/base_entity";
-import { Column, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { User } from "../../user/entities/user.entity";
 import { Exclude } from "class-transformer";
 import { Cart } from "src/features/cart/cart/entities/cart.entity";
+import { Address } from "src/features/address/entities/address.entity";
 
 @Entity({name:"buyers"})
 export class Buyer extends BaseEntity {
     @PrimaryGeneratedColumn()
     id!:number
 
-    @Column({type:"varchar",length:255,
-        nullable:true
+    @Column({
+        type: 'int',
+        nullable: true
     })
-    delivery_address?:string
+    active_address_id?: number | null
 
     @Column({type:"varchar",length:"20",nullable:true})
     phone_number?:string
@@ -28,4 +30,9 @@ export class Buyer extends BaseEntity {
     @Exclude()
     @JoinColumn({name:"user_id"})
     user!:User
+
+    @OneToMany(() => Address, addresses => addresses.buyer,{
+        cascade:['insert']
+    })
+    addresses!:Address[]
 }

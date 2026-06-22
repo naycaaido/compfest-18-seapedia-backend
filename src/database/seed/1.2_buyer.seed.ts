@@ -9,7 +9,7 @@ export default class BuyerSeeder implements Seeder {
         const repository = manager.getRepository(Buyer)
         await repository.insert([
             {
-                delivery_address:"Jl. Raya Mekarsari, Kelurahan Mekarsari, Kecamatan Cimanggis, Kota Depok, Jawa Barat 16452, Indonesia",
+                phone_number:"+6282124805253",
                 user:{
                     id:1
                 }

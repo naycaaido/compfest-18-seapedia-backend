@@ -15,6 +15,7 @@ import DriverSeeder from './1.3_driver.seed';
 import AdminSeeder from './1.4_admin.seed';
 import CartSeeder from './8_cart.seed';
 import WalletTransactionSeeder from './9_wallet_transaction.seed';
+import AddressSeeder from './10_address.seed';
 
 export interface Seeder {
     run(manager:EntityManager) :Promise<any>
@@ -37,5 +38,6 @@ export interface Seeder {
         await new ProductImageSeeder().run(manager)
         await new CartSeeder().run(manager)
         await new WalletTransactionSeeder().run(manager)
+        await new AddressSeeder().run(manager)
     })
 })();
