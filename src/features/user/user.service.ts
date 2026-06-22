@@ -18,6 +18,7 @@ import { log } from 'console';
 import { instanceToPlain } from 'class-transformer';
 import { Wallet } from '../wallet/wallet/entities/wallet.entity';
 import { exceptionMessage, ExceptionType } from 'src/common/exception';
+import { ChangeUserRoleDto } from './dto/change-user-role.dto';
 
 @Injectable()
 export class UserService {
@@ -82,7 +83,6 @@ export class UserService {
     return
   }
 
-
   async create(createUserDto: CreateUserDto) : Promise<User> {
     const hash_password = await this.hashing(createUserDto.password)
     const newUser = this.userRepository.create({
@@ -136,6 +136,38 @@ export class UserService {
     return `This action updates a #${id} user`;
   }
 
+  async changeRoleCurrent(payload:Payload, changeUserRoleDto : ChangeUserRoleDto){
+    const relations: FindOptionsRelations<User> = {
+          ...(changeUserRoleDto.role === UserRole.ADMIN && { admin: true }),
+          ...(changeUserRoleDto.role === UserRole.BUYER && { buyer: true }),
+          ...(changeUserRoleDto.role === UserRole.SELLER && { seller: true }),
+          ...(changeUserRoleDto.role === UserRole.DRIVER && { driver: true }),
+      }
+    if(payload.role == changeUserRoleDto.role){
+      throw new BadRequestException(exceptionMessage(ExceptionType.BAD_REQUEST,"Cannot be the same role as current active"))
+    }
+    const user = await this.userRepository.findOne({
+      where:{
+        id:payload.sub
+      },
+      relations:relations
+    })
+    if(!user){
+      throw new NotFoundException(exceptionMessage(ExceptionType.NOT_FOUND,"User"))
+    }
+    const idRole = this.getIdRole(user,changeUserRoleDto.role)
+    if(idRole == 0){
+      throw new BadRequestException(exceptionMessage(ExceptionType.EMPTY,"User does not have the role"))
+    }
+
+    const newPayload = new Payload(
+      payload.sub,
+      payload.email,
+      idRole,
+      changeUserRoleDto.role)
+    const accessToken = await this.jwtService.signAsync(newPayload.toObject())
+    return accessToken
+  }
   async remove(id: number,payload:Payload) {
     const where: any = { id };
     if (payload.role != UserRole.ADMIN) {

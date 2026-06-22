@@ -23,7 +23,11 @@ export class Product extends BaseEntity{
     @Column({type:"int",default:0})
     stock!:number
 
-    @Column({type:"boolean",default:false})
+    @Column({
+        type: "boolean",
+        generatedType: "STORED",
+        asExpression: `CASE WHEN stock = 0 THEN false ELSE true END`,
+    })
     is_available!:boolean
 
     @OneToMany(() => ProductImage, productImage => productImage.product,{

@@ -12,6 +12,7 @@ import { UserRole } from './entities/role_user.enum';
 import { PayloadJWT } from 'src/decorators/payload.decorator';
 import { Payload } from 'src/common/utils';
 import { AddRoleUserDto } from './dto/add-role-user.dto';
+import { ChangeUserRoleDto } from './dto/change-user-role.dto';
 
 @UserRoleDecorator(UserRole.BUYER,UserRole.DRIVER,UserRole.SELLER)
 @Controller('users')
@@ -61,6 +62,16 @@ export class UserController {
   ) {
     return instanceToPlain(this.userService.getProfile(payload.sub));
   }
+
+  @SuccessMessage(successMessageGlobal(SuccessMessageType.DEFAULT,"change role"))
+  @Post('change-role')
+  changeRole(
+    @PayloadJWT() payload:Payload,
+    @Body() dto:ChangeUserRoleDto
+  ) {
+    return this.userService.changeRoleCurrent(payload,dto);
+  }
+
 
   // @Patch(':id')
   // update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {

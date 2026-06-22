@@ -4,5 +4,4 @@ export class CreateBuyerDto {
     @IsNotEmpty()
     @IsNumber()
     user_id!:number
-    
 }

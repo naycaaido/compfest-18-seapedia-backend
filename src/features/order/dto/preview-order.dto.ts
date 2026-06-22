@@ -11,8 +11,4 @@ export class PreviewOrderDto{
     @IsNotEmpty()
     @IsNumber()
     address_id!:number
-
-    @IsNotEmpty()
-    @IsNumber()
-    store_id!:number
 }

@@ -50,9 +50,18 @@ export class AddressService {
     if(!buyer){
       throw new NotFoundException(exceptionMessage(ExceptionType.NOT_FOUND,"Buyer"))
     }
-    return await this.addressRepository.findOneBy({
-      id:buyer?.active_address_id ?? undefined
+
+    const activeAddressId = buyer?.active_address_id
+    if (activeAddressId == null) {
+      throw new NotFoundException(
+        exceptionMessage(ExceptionType.NOT_FOUND, "Active Address")
+      )
+    }
+
+    const address = await this.addressRepository.findOneBy({
+      id: activeAddressId
     })
+    return address
   }
 
   async findOne(id: number, payload:Payload) {

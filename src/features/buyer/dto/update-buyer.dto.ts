@@ -1,4 +1,11 @@
-import { PartialType } from '@nestjs/mapped-types';
-import { CreateBuyerDto } from './create-buyer.dto';
+import { IsNumber, IsOptional, IsPhoneNumber, IsString } from 'class-validator';
 
-export class UpdateBuyerDto extends PartialType(CreateBuyerDto) {}
+export class UpdateBuyerDto{
+    @IsOptional()
+    @IsPhoneNumber()
+    phone_number!:string
+
+    @IsOptional()
+    @IsNumber()
+    active_address_id!:number
+}

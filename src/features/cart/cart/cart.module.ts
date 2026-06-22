@@ -11,8 +11,7 @@ import { Product } from 'src/features/product/product/entities/product.entity';
   controllers: [CartController],
   imports:[TypeOrmModule.forFeature([
     Cart,
-    Store,
-    Product
+
   ]),
   CartItemModule
   ],

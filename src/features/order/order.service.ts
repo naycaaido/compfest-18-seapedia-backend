@@ -379,7 +379,10 @@ export class OrderService {
     statusOrder: OrderStatus | undefined = OrderStatus.PROCCESS
   ): Promise<Order> {
     const address = await this.addressRepository.findOneBy({
-      id: dto.address_id
+      id: dto.address_id,
+      buyer:{
+        id:payload.userRoleId
+      }
     })
 
     if (!address) {

@@ -54,25 +54,37 @@ export class WalletTransactionService {
     })
   }
 
-  async findAll(findWalletTransactionDto:FindWalletTransactionDto,payload:Payload) {
-    let where : FindOptionsWhere<WalletTransactions> = {}
-    if(findWalletTransactionDto.wallet_transaction_type){
-      where.type = findWalletTransactionDto.wallet_transaction_type
+  async findAll(
+    findWalletTransactionDto: FindWalletTransactionDto,
+    payload: Payload
+) {
+  const where: FindOptionsWhere<WalletTransactions>[] = [
+    {
+      sender: {
+        id: payload.sub
+      }
+    },
+    {
+      receiver: {
+        id: payload.sub
+      }
     }
-    where.receiver = {
-      id:payload.sub
-    }
-    where.sender = {
-      id:payload.sub
-    }
-    return await this.walletTransactionsRepository.find({
-      where:where,
-      order:{
-        id:'DESC'
-      },
-      relations:{
-        receiver:true,
-        sender:true,
+  ]
+
+  if (findWalletTransactionDto.wallet_transaction_type) {
+    where.forEach(w => {
+      w.type = findWalletTransactionDto.wallet_transaction_type
+    })
+  }
+
+  return await this.walletTransactionsRepository.find({
+    where,
+    order: {
+      id: 'DESC'
+    },
+    relations: {
+      sender: true,
+        receiver: true
       }
     })
   }

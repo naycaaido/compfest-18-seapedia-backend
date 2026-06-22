@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Payload } from 'src/common/utils';
 import { Cart } from './entities/cart.entity';
@@ -9,16 +9,14 @@ import { UpdateCartItemDto } from '../cart-item/dto/update-cart-item.dto';
 import { Store } from 'src/features/store/entities/store.entity';
 import { exceptionMessage, ExceptionType } from 'src/common/exception';
 import { Product } from 'src/features/product/product/entities/product.entity';
+import { Buyer } from 'src/features/buyer/entities/buyer.entity';
+import { log } from 'console';
 
 @Injectable()
 export class CartService {
   constructor(
     @InjectRepository(Cart)
     private cartRepository : Repository<Cart>,
-    @InjectRepository(Store)
-    private storeRepository:Repository<Store>,
-    @InjectRepository(Product)
-    private productRepository:Repository<Product>,
     private readonly cartItemService:CartItemService
   ) {}
 
@@ -44,7 +42,17 @@ export class CartService {
           id:payload.userRoleId
         }
       },
+      relations:{
+        buyer:true
+      }
     })
+    const activeAddressIsNull = cart.buyer.active_address_id == null
+    const phoneNumberIsNull = cart.buyer.phone_number == null
+    if(activeAddressIsNull || phoneNumberIsNull){
+      log(cart.buyer.phone_number)
+      const message = `${activeAddressIsNull ? "Buyer must at least have one address, " :""}${phoneNumberIsNull ? "Buyer must have phone number" :""}`
+      throw new ForbiddenException(exceptionMessage(ExceptionType.FORBIDDEN,message))
+    }
     const result = await this.cartItemService.create(createCartDto,cart)
     if(cart.store_id === null){
       cart.store_id = result.storeId

@@ -12,7 +12,8 @@ export default class BuyerSeeder implements Seeder {
                 phone_number:"+6282124805253",
                 user:{
                     id:1
-                }
+                },
+                active_address_id:1,
             },
         ])
     }

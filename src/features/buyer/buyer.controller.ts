@@ -2,6 +2,8 @@ import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/commo
 import { BuyerService } from './buyer.service';
 import { CreateBuyerDto } from './dto/create-buyer.dto';
 import { UpdateBuyerDto } from './dto/update-buyer.dto';
+import { PayloadJWT } from 'src/decorators/payload.decorator';
+import { Payload } from 'src/common/utils';
 
 @Controller('buyer')
 export class BuyerController {
@@ -22,9 +24,11 @@ export class BuyerController {
     return this.buyerService.findOne(+id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateBuyerDto: UpdateBuyerDto) {
-    return this.buyerService.update(+id, updateBuyerDto);
+  @Patch()
+  update(
+    @PayloadJWT() payload:Payload, 
+    @Body() updateBuyerDto: UpdateBuyerDto) {
+    return this.buyerService.update(payload, updateBuyerDto);
   }
 
   @Delete(':id')
