@@ -4,6 +4,7 @@ import { Column, Entity, PrimaryGeneratedColumn,Check, OneToMany, ManyToOne, Joi
 import { ProductCategory } from "../../product-category/entities/product-category.entity";
 import { ProductImage } from "../../product-image/entities/product-image.entity";
 import { ProductType } from "../../product-type/entities/product-type.entity";
+import { OrderItem } from "src/features/order/entities/order-item.entity";
 
 @Entity({name:"products"})
 @Index('idx_product_store_type', ['store', 'category'])
@@ -34,6 +35,9 @@ export class Product extends BaseEntity{
         cascade:true
     })
     types!:ProductType[]
+
+    @OneToMany(() => OrderItem, orderItems => orderItems.product)
+    orderItems!:OrderItem[]
 
     @Index("idx_product_store_id")
     @ManyToOne(() => Store, store => store.products,{

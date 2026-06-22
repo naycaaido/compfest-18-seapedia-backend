@@ -11,7 +11,7 @@ export default class StoreSeeder implements Seeder{
     async run(manager:EntityManager): Promise<any> {
         console.log('🔥 StoreSeeder is running');
         const repository = manager.getRepository(Store)
-        await repository.insert([
+        await repository.save([
             {
                 name:"Toko Raja Bandung",
                 image_id: path.join(DirType.STORE, 'borma_id.seed.png'),
@@ -20,9 +20,7 @@ export default class StoreSeeder implements Seeder{
                 longitude: 107.6235,
                 phone_number:"+6282124805253",
                 seller:{
-                    user:{
-                        id:1
-                    }
+                    id:1
                 }
             },
             {
@@ -33,9 +31,7 @@ export default class StoreSeeder implements Seeder{
                 longitude: 106.8496,
                 phone_number:"+6282124805254",
                 seller:{
-                    user:{
-                        id:2
-                    }
+                    id:2
                 }
             }
         ])

@@ -16,6 +16,8 @@ import AdminSeeder from './1.4_admin.seed';
 import CartSeeder from './8_cart.seed';
 import WalletTransactionSeeder from './9_wallet_transaction.seed';
 import AddressSeeder from './10_address.seed';
+import SystemSeed from './11_system.seed';
+import SystemSeeder from './11_system.seed';
 
 export interface Seeder {
     run(manager:EntityManager) :Promise<any>
@@ -24,6 +26,7 @@ export interface Seeder {
     const dataSource = new DataSource(options);
     await dataSource.initialize();
     await dataSource.transaction(async(manager) =>{
+        await new SystemSeeder().run(manager)
         await new ReviewSeeder().run(manager)
         await new UserSeeder().run(manager)
         await new SellerSeeder().run(manager)

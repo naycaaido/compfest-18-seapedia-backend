@@ -9,11 +9,14 @@ export class Cart extends BaseEntity{
     @PrimaryGeneratedColumn()
     id!:number
 
+    @Column({type:"int",default:null, nullable:true})
+    store_id?:number | null
+
     @Column({type:"int",default:0})
     sub_total!:number
 
     @OneToMany(() => CartItem, cartItems => cartItems.cart,{
-        cascade:['insert']
+        cascade:['insert','remove']
     })
     @Expose({name:"cart_items"})
     cartItems!:CartItem[]

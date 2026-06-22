@@ -67,6 +67,9 @@ export class WalletTransactionService {
     }
     return await this.walletTransactionsRepository.find({
       where:where,
+      order:{
+        id:'DESC'
+      },
       relations:{
         receiver:true,
         sender:true,

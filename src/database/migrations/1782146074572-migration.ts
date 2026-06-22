@@ -1,13 +1,32 @@
 import { MigrationInterface, QueryRunner } from "typeorm";
 
-export class Migration1782068363505 implements MigrationInterface {
-    name = 'Migration1782068363505'
+export class Migration1782146074572 implements MigrationInterface {
+    name = 'Migration1782146074572'
 
     public async up(queryRunner: QueryRunner): Promise<void> {
+        await queryRunner.query(`CREATE TABLE "system" ("createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "deleted_at" TIMESTAMP, "id" SERIAL NOT NULL, "current_date" date NOT NULL, CONSTRAINT "PK_6b1e6b6f88da9888fde62379945" PRIMARY KEY ("id"))`);
         await queryRunner.query(`CREATE TYPE "public"."user_roles_role_enum" AS ENUM('Admin', 'Buyer', 'Seller', 'Driver')`);
         await queryRunner.query(`CREATE TABLE "user_roles" ("createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "deleted_at" TIMESTAMP, "id" SERIAL NOT NULL, "role" "public"."user_roles_role_enum" NOT NULL, "user_id" integer, CONSTRAINT "UQ_09d115a69b6014d324d592f9c42" UNIQUE ("user_id", "role"), CONSTRAINT "PK_8acd5cf26ebd158416f477de799" PRIMARY KEY ("id"))`);
         await queryRunner.query(`CREATE INDEX "idx_user_role_user_id" ON "user_roles" ("user_id") `);
-        await queryRunner.query(`CREATE TABLE "sellers" ("createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "deleted_at" TIMESTAMP, "id" SERIAL NOT NULL, "user_id" integer, CONSTRAINT "REL_83f4670f0e114d0be3731bade8" UNIQUE ("user_id"), CONSTRAINT "PK_97337ccbf692c58e6c7682de8a2" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE TABLE "order_addresses" ("createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "deleted_at" TIMESTAMP, "id" SERIAL NOT NULL, "receiver_name" character varying(255) NOT NULL, "receiver_phone_number" character varying(255) NOT NULL, "receiver_address" text NOT NULL, "latitude" numeric(10,8), "longitude" numeric(11,8), "buyer_id" integer, CONSTRAINT "PK_4b8d293512b266903d636106440" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE TABLE "product_type_items" ("createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "deleted_at" TIMESTAMP, "id" SERIAL NOT NULL, "name" character varying(255) NOT NULL, "stock" integer NOT NULL DEFAULT '0', "price" integer NOT NULL DEFAULT '0', "product_type_id" integer, CONSTRAINT "CHK_63c91a20ccf3058817d1a12f04" CHECK (price >= 0), CONSTRAINT "CHK_87cd660bb3fb42b54c2ce5ad67" CHECK (stock >= 0), CONSTRAINT "PK_67031cdd9d01f144758e390a6f2" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE INDEX "idx_product_type_item_product_type_id" ON "product_type_items" ("product_type_id") `);
+        await queryRunner.query(`CREATE TABLE "product_types" ("createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "deleted_at" TIMESTAMP, "id" SERIAL NOT NULL, "name" character varying(255) NOT NULL, "is_multiple" boolean NOT NULL DEFAULT false, "is_required" boolean NOT NULL DEFAULT true, "product_id" integer, CONSTRAINT "PK_6ad7b08e6491a02ebc9ed82019d" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE INDEX "idx_product_type_product_id" ON "product_types" ("product_id") `);
+        await queryRunner.query(`CREATE TABLE "order_product_type_item" ("createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "deleted_at" TIMESTAMP, "id" SERIAL NOT NULL, "product_type_item_id" integer, "order_product_type_id" integer, CONSTRAINT "PK_b66fb4979828e602092df8b933a" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE TABLE "order_product_types" ("createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "deleted_at" TIMESTAMP, "id" SERIAL NOT NULL, "order_item_id" integer, "product_type_id" integer, CONSTRAINT "PK_33d313c5d8b5fc6fe3f9eef4353" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE TABLE "order_item" ("createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "deleted_at" TIMESTAMP, "id" SERIAL NOT NULL, "sub_total" integer NOT NULL, "quantity" integer NOT NULL, "order_id" integer, "product_id" integer, CONSTRAINT "PK_d01158fe15b1ead5c26fd7f4e90" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE INDEX "idx_order_item_order_id" ON "order_item" ("order_id") `);
+        await queryRunner.query(`CREATE INDEX "idx_order_item_product_id" ON "order_item" ("product_id") `);
+        await queryRunner.query(`CREATE TYPE "public"."order_histories_status_order_enum" AS ENUM('Sedang Dikemas', 'Menunggu Pengirim', 'Sedang Dikirim', 'Dikembalikan', 'Pesanan Selesai')`);
+        await queryRunner.query(`CREATE TABLE "order_histories" ("createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "deleted_at" TIMESTAMP, "id" SERIAL NOT NULL, "status_order" "public"."order_histories_status_order_enum" NOT NULL, "orderId" integer, CONSTRAINT "PK_580471ac7bdbe26a80ca6f5b7e4" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE TYPE "public"."orders_delivery_method_enum" AS ENUM('Instant', 'Next Day', 'Regular')`);
+        await queryRunner.query(`CREATE TYPE "public"."orders_status_enum" AS ENUM('Sedang Dikemas', 'Menunggu Pengirim', 'Sedang Dikirim', 'Dikembalikan', 'Pesanan Selesai')`);
+        await queryRunner.query(`CREATE TABLE "orders" ("id" SERIAL NOT NULL, "delivery_method" "public"."orders_delivery_method_enum" NOT NULL, "distance_journey" integer NOT NULL, "overdue" TIMESTAMP NOT NULL, "delivery_fee" integer NOT NULL, "tax_fee" integer NOT NULL, "sub_total" integer NOT NULL, "total_fee" integer NOT NULL, "status" "public"."orders_status_enum" NOT NULL, "store_id" integer, "buyer_id" integer, "order_address_id" integer, CONSTRAINT "REL_fb32243fb075e5d3a7a82d695b" UNIQUE ("order_address_id"), CONSTRAINT "PK_710e2d4957aa5878dfe94e4ac2f" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE INDEX "idx_order_status" ON "orders" ("status") `);
+        await queryRunner.query(`CREATE INDEX "idx_order_store_id" ON "orders" ("store_id") `);
+        await queryRunner.query(`CREATE INDEX "idx_order_buyer_id" ON "orders" ("buyer_id") `);
+        await queryRunner.query(`CREATE INDEX "idx_order_order_address_id" ON "orders" ("order_address_id") `);
         await queryRunner.query(`CREATE TABLE "stores" ("createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "deleted_at" TIMESTAMP, "id" SERIAL NOT NULL, "name" character varying(100) NOT NULL, "address" text NOT NULL, "phone_number" character varying(20) NOT NULL, "image_id" text, "latitude" numeric(10,8), "longitude" numeric(11,8), "seller_id" integer, CONSTRAINT "UQ_f54021fe54dab228ebefc63350e" UNIQUE ("image_id"), CONSTRAINT "PK_7aa6e7d71fa7acdd7ca43d7c9cb" PRIMARY KEY ("id"))`);
         await queryRunner.query(`CREATE UNIQUE INDEX "idx_store_seller_active" ON "stores" ("seller_id") WHERE "deleted_at" IS NULL`);
         await queryRunner.query(`CREATE UNIQUE INDEX "idx_store_name_active" ON "stores" ("name") WHERE "deleted_at" IS NULL`);
@@ -15,10 +34,6 @@ export class Migration1782068363505 implements MigrationInterface {
         await queryRunner.query(`CREATE TABLE "product_categories" ("createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "deleted_at" TIMESTAMP, "id" SERIAL NOT NULL, "name" character varying(255) NOT NULL, "seller_id" integer, CONSTRAINT "PK_7069dac60d88408eca56fdc9e0c" PRIMARY KEY ("id"))`);
         await queryRunner.query(`CREATE TABLE "product_images" ("createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "deleted_at" TIMESTAMP, "id" SERIAL NOT NULL, "image_id" text, "product_id" integer, CONSTRAINT "UQ_2212515ba306c79f42c46a99db7" UNIQUE ("image_id"), CONSTRAINT "PK_1974264ea7265989af8392f63a1" PRIMARY KEY ("id"))`);
         await queryRunner.query(`CREATE INDEX "idx_product_images_product_id" ON "product_images" ("product_id") `);
-        await queryRunner.query(`CREATE TABLE "product_type_items" ("createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "deleted_at" TIMESTAMP, "id" SERIAL NOT NULL, "name" character varying(255) NOT NULL, "stock" integer NOT NULL DEFAULT '0', "price" integer NOT NULL DEFAULT '0', "product_type_id" integer, CONSTRAINT "CHK_63c91a20ccf3058817d1a12f04" CHECK (price >= 0), CONSTRAINT "CHK_87cd660bb3fb42b54c2ce5ad67" CHECK (stock >= 0), CONSTRAINT "PK_67031cdd9d01f144758e390a6f2" PRIMARY KEY ("id"))`);
-        await queryRunner.query(`CREATE INDEX "idx_product_type_item_product_type_id" ON "product_type_items" ("product_type_id") `);
-        await queryRunner.query(`CREATE TABLE "product_types" ("createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "deleted_at" TIMESTAMP, "id" SERIAL NOT NULL, "name" character varying(255) NOT NULL, "is_multiple" boolean NOT NULL DEFAULT false, "is_required" boolean NOT NULL DEFAULT true, "product_id" integer, CONSTRAINT "PK_6ad7b08e6491a02ebc9ed82019d" PRIMARY KEY ("id"))`);
-        await queryRunner.query(`CREATE INDEX "idx_product_type_product_id" ON "product_types" ("product_id") `);
         await queryRunner.query(`CREATE TABLE "products" ("createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "deleted_at" TIMESTAMP, "id" SERIAL NOT NULL, "name" character varying(255) NOT NULL, "price" integer NOT NULL DEFAULT '0', "stock" integer NOT NULL DEFAULT '0', "is_available" boolean NOT NULL DEFAULT false, "store_id" integer, "category_id" integer, CONSTRAINT "CHK_4f89fdb25537b37409d3b781c8" CHECK ("price" >= 0), CONSTRAINT "CHK_aea3ee263e1d44e36e5f5b5783" CHECK ("stock" >= 0), CONSTRAINT "PK_0806c755e0aca124e67c0cf6d7d" PRIMARY KEY ("id"))`);
         await queryRunner.query(`CREATE INDEX "idx_product_store_id" ON "products" ("store_id") `);
         await queryRunner.query(`CREATE INDEX "idx_product_product_category_id" ON "products" ("category_id") `);
@@ -30,23 +45,42 @@ export class Migration1782068363505 implements MigrationInterface {
         await queryRunner.query(`CREATE TABLE "cart_item" ("createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "deleted_at" TIMESTAMP, "id" SERIAL NOT NULL, "quantity" integer NOT NULL DEFAULT '0', "sub_total" integer NOT NULL DEFAULT '0', "product_id" integer, "cart_id" integer, CONSTRAINT "PK_bd94725aa84f8cf37632bcde997" PRIMARY KEY ("id"))`);
         await queryRunner.query(`CREATE INDEX "idx_cart_item_product_id" ON "cart_item" ("product_id") `);
         await queryRunner.query(`CREATE INDEX "idx_cart_item_cart_id" ON "cart_item" ("cart_id") `);
-        await queryRunner.query(`CREATE TABLE "carts" ("createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "deleted_at" TIMESTAMP, "id" SERIAL NOT NULL, "sub_total" integer NOT NULL DEFAULT '0', "buyer_id" integer, CONSTRAINT "REL_eef2fb4d1af19f8cd8a7a069fc" UNIQUE ("buyer_id"), CONSTRAINT "PK_b5f695a59f5ebb50af3c8160816" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE TABLE "carts" ("createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "deleted_at" TIMESTAMP, "id" SERIAL NOT NULL, "store_id" integer, "sub_total" integer NOT NULL DEFAULT '0', "buyer_id" integer, CONSTRAINT "REL_eef2fb4d1af19f8cd8a7a069fc" UNIQUE ("buyer_id"), CONSTRAINT "PK_b5f695a59f5ebb50af3c8160816" PRIMARY KEY ("id"))`);
         await queryRunner.query(`CREATE INDEX "carts_buyer_id" ON "carts" ("buyer_id") `);
-        await queryRunner.query(`CREATE TABLE "buyers" ("createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "deleted_at" TIMESTAMP, "id" SERIAL NOT NULL, "delivery_address" character varying(255), "phone_number" character varying(20), "user_id" integer, CONSTRAINT "REL_00d0563e17355f153e8a05fbc2" UNIQUE ("user_id"), CONSTRAINT "PK_aff372821d05bac04a18ff8eb87" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE TABLE "address" ("createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "deleted_at" TIMESTAMP, "id" SERIAL NOT NULL, "name" character varying(255) NOT NULL, "receiver_name" character varying(255) NOT NULL, "address_detail" text NOT NULL, "latitude" numeric(10,8), "longitude" numeric(11,8), "buyer_id" integer, CONSTRAINT "PK_d92de1f82754668b5f5f5dd4fd5" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE TABLE "buyers" ("createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "deleted_at" TIMESTAMP, "id" SERIAL NOT NULL, "active_address_id" integer, "phone_number" character varying(20), "user_id" integer, CONSTRAINT "REL_00d0563e17355f153e8a05fbc2" UNIQUE ("user_id"), CONSTRAINT "PK_aff372821d05bac04a18ff8eb87" PRIMARY KEY ("id"))`);
         await queryRunner.query(`CREATE TABLE "drivers" ("id" SERIAL NOT NULL, "user_id" integer, CONSTRAINT "REL_8e224f1b8f05ace7cfc7c76d03" UNIQUE ("user_id"), CONSTRAINT "PK_92ab3fb69e566d3eb0cae896047" PRIMARY KEY ("id"))`);
         await queryRunner.query(`CREATE TABLE "admins" ("id" SERIAL NOT NULL, "user_id" integer, CONSTRAINT "REL_2b901dd818a2a6486994d915a6" UNIQUE ("user_id"), CONSTRAINT "PK_e3b38270c97a854c48d2e80874e" PRIMARY KEY ("id"))`);
         await queryRunner.query(`CREATE TABLE "wallets" ("id" SERIAL NOT NULL, "balance" integer NOT NULL DEFAULT '0', "user_id" integer, CONSTRAINT "REL_92558c08091598f7a4439586cd" UNIQUE ("user_id"), CONSTRAINT "PK_8402e5df5a30a229380e83e4f7e" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE INDEX "wallets_user_id" ON "wallets" ("user_id") `);
         await queryRunner.query(`CREATE TABLE "app_review" ("createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "deleted_at" TIMESTAMP, "id" SERIAL NOT NULL, "reviewer_name" character varying(255) NOT NULL, "comment" character varying(255) NOT NULL, "rating" smallint NOT NULL, "user_id" integer, CONSTRAINT "PK_80c5faa110e633ec6073e01b7d7" PRIMARY KEY ("id"))`);
         await queryRunner.query(`CREATE TABLE "users" ("createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "deleted_at" TIMESTAMP, "id" SERIAL NOT NULL, "full_name" character varying(255) NOT NULL, "email" character varying(255) NOT NULL, "password" text NOT NULL, CONSTRAINT "UQ_97672ac88f789774dd47f7c8be3" UNIQUE ("email"), CONSTRAINT "PK_a3ffb1c0c8416b9fc6f907b7433" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE TABLE "sellers" ("createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "deleted_at" TIMESTAMP, "id" SERIAL NOT NULL, "user_id" integer, CONSTRAINT "REL_83f4670f0e114d0be3731bade8" UNIQUE ("user_id"), CONSTRAINT "PK_97337ccbf692c58e6c7682de8a2" PRIMARY KEY ("id"))`);
         await queryRunner.query(`CREATE TYPE "public"."wallet_transactions_type_enum" AS ENUM('Top Up', 'Payment', 'Refund')`);
         await queryRunner.query(`CREATE TABLE "wallet_transactions" ("id" SERIAL NOT NULL, "type" "public"."wallet_transactions_type_enum" NOT NULL, "amount" integer NOT NULL, "description" character varying(255) NOT NULL, "sender_id" integer, "receiver_id" integer, CONSTRAINT "PK_5120f131bde2cda940ec1a621db" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE INDEX "wallet_transaction_type" ON "wallet_transactions" ("type") `);
+        await queryRunner.query(`CREATE INDEX "idx_wallet_transaction_sender_id" ON "wallet_transactions" ("sender_id") `);
+        await queryRunner.query(`CREATE INDEX "idx_wallet_transaction_receiver_id" ON "wallet_transactions" ("receiver_id") `);
+        await queryRunner.query(`CREATE INDEX "idx_wallet_transactions_sender_type" ON "wallet_transactions" ("sender_id", "type") `);
+        await queryRunner.query(`CREATE INDEX "idx_wallet_transactions_receiver_type" ON "wallet_transactions" ("receiver_id", "type") `);
+        await queryRunner.query(`CREATE INDEX "idx_wallet_transactions_receiver_sender" ON "wallet_transactions" ("receiver_id", "sender_id") `);
         await queryRunner.query(`ALTER TABLE "user_roles" ADD CONSTRAINT "FK_87b8888186ca9769c960e926870" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE "sellers" ADD CONSTRAINT "FK_83f4670f0e114d0be3731bade87" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "order_addresses" ADD CONSTRAINT "FK_f7e890f8cb344f4df62a7ca2000" FOREIGN KEY ("buyer_id") REFERENCES "buyers"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "product_type_items" ADD CONSTRAINT "FK_7405983a98aa65e87b7919ded7d" FOREIGN KEY ("product_type_id") REFERENCES "product_types"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "product_types" ADD CONSTRAINT "FK_1909f55ada79c4c8f3d58c9fcb6" FOREIGN KEY ("product_id") REFERENCES "products"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "order_product_type_item" ADD CONSTRAINT "FK_fa82486ce6fbd8357bf2eb00e57" FOREIGN KEY ("product_type_item_id") REFERENCES "product_type_items"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "order_product_type_item" ADD CONSTRAINT "FK_1fe4e2cfacbc0aee30b9197ae17" FOREIGN KEY ("order_product_type_id") REFERENCES "order_product_types"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "order_product_types" ADD CONSTRAINT "FK_d29aa21a85e17ba107e7f6802a3" FOREIGN KEY ("order_item_id") REFERENCES "order_item"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "order_product_types" ADD CONSTRAINT "FK_b63da54cb275083e8fa6c0ab309" FOREIGN KEY ("product_type_id") REFERENCES "product_types"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "order_item" ADD CONSTRAINT "FK_e9674a6053adbaa1057848cddfa" FOREIGN KEY ("order_id") REFERENCES "orders"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "order_item" ADD CONSTRAINT "FK_5e17c017aa3f5164cb2da5b1c6b" FOREIGN KEY ("product_id") REFERENCES "products"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "order_histories" ADD CONSTRAINT "FK_623dbc91c4a74b8540e877e195a" FOREIGN KEY ("orderId") REFERENCES "orders"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "orders" ADD CONSTRAINT "FK_b7a7bb813431fc7cd73cced0001" FOREIGN KEY ("store_id") REFERENCES "stores"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "orders" ADD CONSTRAINT "FK_5e90e93d0e036c3fadbaefa4d0a" FOREIGN KEY ("buyer_id") REFERENCES "buyers"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "orders" ADD CONSTRAINT "FK_fb32243fb075e5d3a7a82d695b7" FOREIGN KEY ("order_address_id") REFERENCES "order_addresses"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "stores" ADD CONSTRAINT "FK_540fd9716dec62b65e2d15a8ced" FOREIGN KEY ("seller_id") REFERENCES "sellers"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "product_categories" ADD CONSTRAINT "FK_4a467492397b6762144724b8893" FOREIGN KEY ("seller_id") REFERENCES "sellers"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "product_images" ADD CONSTRAINT "FK_4f166bb8c2bfcef2498d97b4068" FOREIGN KEY ("product_id") REFERENCES "products"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE "product_type_items" ADD CONSTRAINT "FK_7405983a98aa65e87b7919ded7d" FOREIGN KEY ("product_type_id") REFERENCES "product_types"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE "product_types" ADD CONSTRAINT "FK_1909f55ada79c4c8f3d58c9fcb6" FOREIGN KEY ("product_id") REFERENCES "products"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "products" ADD CONSTRAINT "FK_68863607048a1abd43772b314ef" FOREIGN KEY ("store_id") REFERENCES "stores"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "products" ADD CONSTRAINT "FK_9a5f6868c96e0069e699f33e124" FOREIGN KEY ("category_id") REFERENCES "product_categories"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "cart_product_type_items" ADD CONSTRAINT "FK_e63ca7f1f178b9814a77d1603eb" FOREIGN KEY ("cart_product_type_id") REFERENCES "cart_product_types"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
@@ -56,11 +90,13 @@ export class Migration1782068363505 implements MigrationInterface {
         await queryRunner.query(`ALTER TABLE "cart_item" ADD CONSTRAINT "FK_67a2e8406e01ffa24ff9026944e" FOREIGN KEY ("product_id") REFERENCES "products"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "cart_item" ADD CONSTRAINT "FK_b6b2a4f1f533d89d218e70db941" FOREIGN KEY ("cart_id") REFERENCES "carts"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "carts" ADD CONSTRAINT "FK_eef2fb4d1af19f8cd8a7a069fcf" FOREIGN KEY ("buyer_id") REFERENCES "buyers"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "address" ADD CONSTRAINT "FK_f2f10a9335015f7ab3fd339e557" FOREIGN KEY ("buyer_id") REFERENCES "buyers"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "buyers" ADD CONSTRAINT "FK_00d0563e17355f153e8a05fbc20" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "drivers" ADD CONSTRAINT "FK_8e224f1b8f05ace7cfc7c76d03b" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "admins" ADD CONSTRAINT "FK_2b901dd818a2a6486994d915a68" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "wallets" ADD CONSTRAINT "FK_92558c08091598f7a4439586cda" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "app_review" ADD CONSTRAINT "FK_cfcc5d74707152337f8ee8b2659" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "sellers" ADD CONSTRAINT "FK_83f4670f0e114d0be3731bade87" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "wallet_transactions" ADD CONSTRAINT "FK_fe71d9d868a527f2f25cb928601" FOREIGN KEY ("sender_id") REFERENCES "users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "wallet_transactions" ADD CONSTRAINT "FK_17cfacdbf6c3519cf2d39b870f2" FOREIGN KEY ("receiver_id") REFERENCES "users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
     }
@@ -68,11 +104,13 @@ export class Migration1782068363505 implements MigrationInterface {
     public async down(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(`ALTER TABLE "wallet_transactions" DROP CONSTRAINT "FK_17cfacdbf6c3519cf2d39b870f2"`);
         await queryRunner.query(`ALTER TABLE "wallet_transactions" DROP CONSTRAINT "FK_fe71d9d868a527f2f25cb928601"`);
+        await queryRunner.query(`ALTER TABLE "sellers" DROP CONSTRAINT "FK_83f4670f0e114d0be3731bade87"`);
         await queryRunner.query(`ALTER TABLE "app_review" DROP CONSTRAINT "FK_cfcc5d74707152337f8ee8b2659"`);
         await queryRunner.query(`ALTER TABLE "wallets" DROP CONSTRAINT "FK_92558c08091598f7a4439586cda"`);
         await queryRunner.query(`ALTER TABLE "admins" DROP CONSTRAINT "FK_2b901dd818a2a6486994d915a68"`);
         await queryRunner.query(`ALTER TABLE "drivers" DROP CONSTRAINT "FK_8e224f1b8f05ace7cfc7c76d03b"`);
         await queryRunner.query(`ALTER TABLE "buyers" DROP CONSTRAINT "FK_00d0563e17355f153e8a05fbc20"`);
+        await queryRunner.query(`ALTER TABLE "address" DROP CONSTRAINT "FK_f2f10a9335015f7ab3fd339e557"`);
         await queryRunner.query(`ALTER TABLE "carts" DROP CONSTRAINT "FK_eef2fb4d1af19f8cd8a7a069fcf"`);
         await queryRunner.query(`ALTER TABLE "cart_item" DROP CONSTRAINT "FK_b6b2a4f1f533d89d218e70db941"`);
         await queryRunner.query(`ALTER TABLE "cart_item" DROP CONSTRAINT "FK_67a2e8406e01ffa24ff9026944e"`);
@@ -82,21 +120,40 @@ export class Migration1782068363505 implements MigrationInterface {
         await queryRunner.query(`ALTER TABLE "cart_product_type_items" DROP CONSTRAINT "FK_e63ca7f1f178b9814a77d1603eb"`);
         await queryRunner.query(`ALTER TABLE "products" DROP CONSTRAINT "FK_9a5f6868c96e0069e699f33e124"`);
         await queryRunner.query(`ALTER TABLE "products" DROP CONSTRAINT "FK_68863607048a1abd43772b314ef"`);
-        await queryRunner.query(`ALTER TABLE "product_types" DROP CONSTRAINT "FK_1909f55ada79c4c8f3d58c9fcb6"`);
-        await queryRunner.query(`ALTER TABLE "product_type_items" DROP CONSTRAINT "FK_7405983a98aa65e87b7919ded7d"`);
         await queryRunner.query(`ALTER TABLE "product_images" DROP CONSTRAINT "FK_4f166bb8c2bfcef2498d97b4068"`);
         await queryRunner.query(`ALTER TABLE "product_categories" DROP CONSTRAINT "FK_4a467492397b6762144724b8893"`);
         await queryRunner.query(`ALTER TABLE "stores" DROP CONSTRAINT "FK_540fd9716dec62b65e2d15a8ced"`);
-        await queryRunner.query(`ALTER TABLE "sellers" DROP CONSTRAINT "FK_83f4670f0e114d0be3731bade87"`);
+        await queryRunner.query(`ALTER TABLE "orders" DROP CONSTRAINT "FK_fb32243fb075e5d3a7a82d695b7"`);
+        await queryRunner.query(`ALTER TABLE "orders" DROP CONSTRAINT "FK_5e90e93d0e036c3fadbaefa4d0a"`);
+        await queryRunner.query(`ALTER TABLE "orders" DROP CONSTRAINT "FK_b7a7bb813431fc7cd73cced0001"`);
+        await queryRunner.query(`ALTER TABLE "order_histories" DROP CONSTRAINT "FK_623dbc91c4a74b8540e877e195a"`);
+        await queryRunner.query(`ALTER TABLE "order_item" DROP CONSTRAINT "FK_5e17c017aa3f5164cb2da5b1c6b"`);
+        await queryRunner.query(`ALTER TABLE "order_item" DROP CONSTRAINT "FK_e9674a6053adbaa1057848cddfa"`);
+        await queryRunner.query(`ALTER TABLE "order_product_types" DROP CONSTRAINT "FK_b63da54cb275083e8fa6c0ab309"`);
+        await queryRunner.query(`ALTER TABLE "order_product_types" DROP CONSTRAINT "FK_d29aa21a85e17ba107e7f6802a3"`);
+        await queryRunner.query(`ALTER TABLE "order_product_type_item" DROP CONSTRAINT "FK_1fe4e2cfacbc0aee30b9197ae17"`);
+        await queryRunner.query(`ALTER TABLE "order_product_type_item" DROP CONSTRAINT "FK_fa82486ce6fbd8357bf2eb00e57"`);
+        await queryRunner.query(`ALTER TABLE "product_types" DROP CONSTRAINT "FK_1909f55ada79c4c8f3d58c9fcb6"`);
+        await queryRunner.query(`ALTER TABLE "product_type_items" DROP CONSTRAINT "FK_7405983a98aa65e87b7919ded7d"`);
+        await queryRunner.query(`ALTER TABLE "order_addresses" DROP CONSTRAINT "FK_f7e890f8cb344f4df62a7ca2000"`);
         await queryRunner.query(`ALTER TABLE "user_roles" DROP CONSTRAINT "FK_87b8888186ca9769c960e926870"`);
+        await queryRunner.query(`DROP INDEX "public"."idx_wallet_transactions_receiver_sender"`);
+        await queryRunner.query(`DROP INDEX "public"."idx_wallet_transactions_receiver_type"`);
+        await queryRunner.query(`DROP INDEX "public"."idx_wallet_transactions_sender_type"`);
+        await queryRunner.query(`DROP INDEX "public"."idx_wallet_transaction_receiver_id"`);
+        await queryRunner.query(`DROP INDEX "public"."idx_wallet_transaction_sender_id"`);
+        await queryRunner.query(`DROP INDEX "public"."wallet_transaction_type"`);
         await queryRunner.query(`DROP TABLE "wallet_transactions"`);
         await queryRunner.query(`DROP TYPE "public"."wallet_transactions_type_enum"`);
+        await queryRunner.query(`DROP TABLE "sellers"`);
         await queryRunner.query(`DROP TABLE "users"`);
         await queryRunner.query(`DROP TABLE "app_review"`);
+        await queryRunner.query(`DROP INDEX "public"."wallets_user_id"`);
         await queryRunner.query(`DROP TABLE "wallets"`);
         await queryRunner.query(`DROP TABLE "admins"`);
         await queryRunner.query(`DROP TABLE "drivers"`);
         await queryRunner.query(`DROP TABLE "buyers"`);
+        await queryRunner.query(`DROP TABLE "address"`);
         await queryRunner.query(`DROP INDEX "public"."carts_buyer_id"`);
         await queryRunner.query(`DROP TABLE "carts"`);
         await queryRunner.query(`DROP INDEX "public"."idx_cart_item_cart_id"`);
@@ -110,10 +167,6 @@ export class Migration1782068363505 implements MigrationInterface {
         await queryRunner.query(`DROP INDEX "public"."idx_product_product_category_id"`);
         await queryRunner.query(`DROP INDEX "public"."idx_product_store_id"`);
         await queryRunner.query(`DROP TABLE "products"`);
-        await queryRunner.query(`DROP INDEX "public"."idx_product_type_product_id"`);
-        await queryRunner.query(`DROP TABLE "product_types"`);
-        await queryRunner.query(`DROP INDEX "public"."idx_product_type_item_product_type_id"`);
-        await queryRunner.query(`DROP TABLE "product_type_items"`);
         await queryRunner.query(`DROP INDEX "public"."idx_product_images_product_id"`);
         await queryRunner.query(`DROP TABLE "product_images"`);
         await queryRunner.query(`DROP TABLE "product_categories"`);
@@ -121,10 +174,29 @@ export class Migration1782068363505 implements MigrationInterface {
         await queryRunner.query(`DROP INDEX "public"."idx_store_name_active"`);
         await queryRunner.query(`DROP INDEX "public"."idx_store_seller_active"`);
         await queryRunner.query(`DROP TABLE "stores"`);
-        await queryRunner.query(`DROP TABLE "sellers"`);
+        await queryRunner.query(`DROP INDEX "public"."idx_order_order_address_id"`);
+        await queryRunner.query(`DROP INDEX "public"."idx_order_buyer_id"`);
+        await queryRunner.query(`DROP INDEX "public"."idx_order_store_id"`);
+        await queryRunner.query(`DROP INDEX "public"."idx_order_status"`);
+        await queryRunner.query(`DROP TABLE "orders"`);
+        await queryRunner.query(`DROP TYPE "public"."orders_status_enum"`);
+        await queryRunner.query(`DROP TYPE "public"."orders_delivery_method_enum"`);
+        await queryRunner.query(`DROP TABLE "order_histories"`);
+        await queryRunner.query(`DROP TYPE "public"."order_histories_status_order_enum"`);
+        await queryRunner.query(`DROP INDEX "public"."idx_order_item_product_id"`);
+        await queryRunner.query(`DROP INDEX "public"."idx_order_item_order_id"`);
+        await queryRunner.query(`DROP TABLE "order_item"`);
+        await queryRunner.query(`DROP TABLE "order_product_types"`);
+        await queryRunner.query(`DROP TABLE "order_product_type_item"`);
+        await queryRunner.query(`DROP INDEX "public"."idx_product_type_product_id"`);
+        await queryRunner.query(`DROP TABLE "product_types"`);
+        await queryRunner.query(`DROP INDEX "public"."idx_product_type_item_product_type_id"`);
+        await queryRunner.query(`DROP TABLE "product_type_items"`);
+        await queryRunner.query(`DROP TABLE "order_addresses"`);
         await queryRunner.query(`DROP INDEX "public"."idx_user_role_user_id"`);
         await queryRunner.query(`DROP TABLE "user_roles"`);
         await queryRunner.query(`DROP TYPE "public"."user_roles_role_enum"`);
+        await queryRunner.query(`DROP TABLE "system"`);
     }
 
 }

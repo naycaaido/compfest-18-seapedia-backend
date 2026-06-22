@@ -32,11 +32,6 @@ export class CartController {
     return this.cartService.findCart(payload);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.cartService.findOne(+id);
-  }
-
   @SuccessMessage(successMessageGlobal(SuccessMessageType.UPDATE,'Cart'))
   @Patch(':id')
   update(
@@ -45,6 +40,14 @@ export class CartController {
     @PayloadJWT() payload:Payload
     ) {
     return this.cartService.update(+id, updateCartItemDto,payload);
+  }
+
+  @SuccessMessage(successMessageGlobal(SuccessMessageType.REMOVE,"Cart items"))
+  @Delete('all')
+  removeAllCartItem(
+    @PayloadJWT() payload:Payload
+  ) {
+    return this.cartService.removeAll(payload);
   }
 
   @SuccessMessage(successMessageGlobal(SuccessMessageType.REMOVE,"Cart item"))

@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateCartItemDto } from './dto/create-cart-item.dto';
 import { UpdateCartItemDto } from './dto/update-cart-item.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -27,9 +27,14 @@ export class CartItemService {
   ) {}
 
   async create(createCartItemDto: CreateCartItemDto,cart:Cart) {
-    const product = await this.productService.findOne(createCartItemDto.product_id,false)
+    const product = await this.productService.findOne(createCartItemDto.product_id,false,{store:true})
     if(!product){
       throw new NotFoundException(exceptionMessage(ExceptionType.NOT_FOUND,'Product'))
+    }
+
+    if(cart.store_id !== null &&
+       cart.store_id !== product.store.id){
+      throw new ForbiddenException(exceptionMessage(ExceptionType.FORBIDDEN,'Product must be from the same store,'))
     }
 
     const selectedItemIds = createCartItemDto.types.flatMap(type =>
@@ -39,7 +44,10 @@ export class CartItemService {
 
     const existing = await this.existing(createCartItemDto,cart.id,product,productTypeItems)
     if(existing){
-      return existing
+      return {
+        cartItem:existing,
+        storeId:product.store.id
+      }
     }
     
     const extraPrice = this.extraPrice(productTypeItems)
@@ -48,9 +56,10 @@ export class CartItemService {
     )
     cartItem.sub_total = (product.price + extraPrice) * cartItem.quantity!
 
-    console.log(cartItem)
-
-    return await this.cartItemRepository.save(cartItem)
+    return {
+      cartItem: await this.cartItemRepository.save(cartItem),
+      storeId:product.store.id
+    }
   }
 
   async findAll(dto:CreateCartItemDto,cartId:number) {
@@ -184,6 +193,13 @@ export class CartItemService {
     return await this.cartItemRepository.save(cartItem)
   }
 
+  async removeByCartId(cartId:number){
+    await this.cartItemRepository.delete({
+      cart:{
+        id:cartId
+      }
+    })
+  }
 
   async remove(id: number,payload:Payload) {
     const cartItem = await this.cartItemRepository.findOneBy({

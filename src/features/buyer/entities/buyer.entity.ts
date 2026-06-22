@@ -4,6 +4,7 @@ import { User } from "../../user/entities/user.entity";
 import { Exclude } from "class-transformer";
 import { Cart } from "src/features/cart/cart/entities/cart.entity";
 import { Address } from "src/features/address/entities/address.entity";
+import { Order } from "src/features/order/entities/order.entity";
 
 @Entity({name:"buyers"})
 export class Buyer extends BaseEntity {
@@ -30,6 +31,9 @@ export class Buyer extends BaseEntity {
     @Exclude()
     @JoinColumn({name:"user_id"})
     user!:User
+
+    @OneToMany(() => Order, orders => orders.buyer)
+    orders!:Order[]
 
     @OneToMany(() => Address, addresses => addresses.buyer,{
         cascade:['insert']

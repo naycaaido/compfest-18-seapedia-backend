@@ -3,7 +3,7 @@ import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Product } from './entities/product.entity';
-import { DataSource, FindOptionsWhere, ILike, In, Repository } from 'typeorm';
+import { DataSource, FindOptionsRelations, FindOptionsWhere, ILike, In, Repository } from 'typeorm';
 import { log } from 'console';
 import { File } from 'src/features/image/constant';
 import { DirType, Payload } from 'src/common/utils';
@@ -130,7 +130,8 @@ export class ProductService {
     });
   }
 
-  async findOne(id: number, relations:boolean = true,seller?:object) {
+  async findOne(id: number, relations:boolean = true, relationsCustom:FindOptionsRelations<Product> = {},seller?:object) {
+    const relation = Object.keys(relationsCustom).length > 0  ? relationsCustom : relations ? ProductService.productRelation : undefined
      return await this.productRepository.findOne({
       cache:true,
       where:{
@@ -139,7 +140,7 @@ export class ProductService {
           seller:seller
         }
       },
-      relations:relations ? ProductService.productRelation : undefined
+      relations:relation
     });
   }
 

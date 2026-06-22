@@ -1,5 +1,6 @@
 import { Exclude, Expose } from "class-transformer";
 import { BaseEntity } from "src/common/base_entity";
+import { Order } from "src/features/order/entities/order.entity";
 import { Product } from "src/features/product/product/entities/product.entity";
 import { Seller } from "src/features/seller/entities/seller.entity";
 import { AfterSoftRemove, Column, Entity, Index, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
@@ -46,7 +47,7 @@ export class Store extends BaseEntity {
     nullable:true
     })
     longitude?: number;
-
+    
     @ManyToOne(() => Seller, seller => seller.store,{
         onDelete:"CASCADE",
     })
@@ -57,4 +58,8 @@ export class Store extends BaseEntity {
     @OneToMany(() => Product, products => products.store,{
     })
     products!:Product[]
+
+    @OneToMany(() => Order, orders => orders.store,{
+    })
+    orders!:Order[]
 }

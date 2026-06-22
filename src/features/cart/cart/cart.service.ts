@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Payload } from 'src/common/utils';
 import { Cart } from './entities/cart.entity';
@@ -6,12 +6,19 @@ import { Repository } from 'typeorm';
 import { CreateCartItemDto } from '../cart-item/dto/create-cart-item.dto';
 import { CartItemService } from '../cart-item/cart-item.service';
 import { UpdateCartItemDto } from '../cart-item/dto/update-cart-item.dto';
+import { Store } from 'src/features/store/entities/store.entity';
+import { exceptionMessage, ExceptionType } from 'src/common/exception';
+import { Product } from 'src/features/product/product/entities/product.entity';
 
 @Injectable()
 export class CartService {
   constructor(
     @InjectRepository(Cart)
     private cartRepository : Repository<Cart>,
+    @InjectRepository(Store)
+    private storeRepository:Repository<Store>,
+    @InjectRepository(Product)
+    private productRepository:Repository<Product>,
     private readonly cartItemService:CartItemService
   ) {}
 
@@ -38,9 +45,13 @@ export class CartService {
         }
       },
     })
-    const cartItem = await this.cartItemService.create(createCartDto,cart)
+    const result = await this.cartItemService.create(createCartDto,cart)
+    if(cart.store_id === null){
+      cart.store_id = result.storeId
+      await this.cartRepository.save(cart)
+    }
     await this.recalculateSubtotal(payload.userRoleId)
-    return cartItem
+    return result.cartItem
   }
 
   async recalculateSubtotal(buyerId: number) {
@@ -59,12 +70,10 @@ export class CartService {
       (sum, item) => sum + item.sub_total,
       0
     ) 
-
+    if(cart.cartItems.length === 0){
+      cart.store_id = null
+    }
     await this.cartRepository.save(cart)
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} cart`;
   }
 
   async update(id: number, updateCartDto: UpdateCartItemDto,payload:Payload) {
@@ -76,6 +85,22 @@ export class CartService {
   async remove(id: number,payload:Payload) {
     await this.cartItemService.remove(id,payload)
     await this.recalculateSubtotal(payload.userRoleId)
+    return true
+  }
+
+  async removeAll(payload:Payload) {
+    const cart = await this.cartRepository.findOneBy({
+      buyer:{
+        id:payload.userRoleId
+      }
+    })
+    if(!cart){
+      throw new NotFoundException(exceptionMessage(ExceptionType.NOT_FOUND,"Cart"))
+    }
+    await this.cartItemService.removeByCartId(cart.id)
+    cart.sub_total = 0
+    cart.store_id = null
+    await this.cartRepository.save(cart)
     return true
   }
 }

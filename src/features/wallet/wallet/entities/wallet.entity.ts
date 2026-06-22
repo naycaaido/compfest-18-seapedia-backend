@@ -1,5 +1,5 @@
 import { User } from "src/features/user/entities/user.entity";
-import { Column, Entity, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, Index, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { WalletTransactions } from "../../wallet-transaction/entities/wallet-transaction.entity";
 
 @Entity({name:"wallets"})
@@ -10,6 +10,7 @@ export class Wallet {
     @Column({name:"balance",default:0,type:"int"})
     balance!:number
 
+    @Index("wallets_user_id")
     @OneToOne(() => User, (user) => user.wallet,{
         onDelete:'CASCADE'
     })

@@ -28,6 +28,10 @@ import { CartItemModule } from './features/cart/cart-item/cart-item.module';
 import { CartProductTypeModule } from './features/cart/cart-product-type/cart-product-type.module';
 import { CartProductTypeItemModule } from './features/cart/cart-product-type-item/cart-product-type-item.module';
 import { AddressModule } from './features/address/address.module';
+import { OrderModule } from './features/order/order.module';
+import { DeliveryModule } from './features/order/delivery/delivery.module';
+import { SystemModule } from './features/system/system.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
@@ -77,7 +81,11 @@ import { AddressModule } from './features/address/address.module';
     CartItemModule,
     CartProductTypeModule,
     CartProductTypeItemModule,
-    AddressModule
+    AddressModule,
+    OrderModule,
+    DeliveryModule,
+    SystemModule,
+    ScheduleModule.forRoot(),
   ],
   controllers: [AppController],
   providers: [

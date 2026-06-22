@@ -8,6 +8,7 @@ export default class CartSeeder implements Seeder {
         const repository = manager.getRepository(Cart)
         await repository.save([
             {
+                store_id:1,
                 buyer:{
                     id:1
                 },
