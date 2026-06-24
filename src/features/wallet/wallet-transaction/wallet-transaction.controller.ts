@@ -31,4 +31,12 @@ export class WalletTransactionController {
   ) {
     return this.walletTransactionService.findAll(dto,payload);
   }
+
+  @UserRoleDecorator(UserRole.BUYER,UserRole.SELLER)
+  @Get('revenue')
+  findRevenue(
+    @PayloadJWT() payload:Payload
+  ) {
+    return this.walletTransactionService.findRevenue(payload);
+  }
 }

@@ -10,6 +10,9 @@ import { Wallet } from '../wallet/entities/wallet.entity';
 import { NotFoundError } from 'rxjs';
 import { exceptionMessage, ExceptionType } from 'src/common/exception';
 import { FindWalletTransactionDto } from './dto/find-wallet-transactions.dto';
+import { log } from 'console';
+import { Revenue } from './entities/revenue';
+import { UserRole } from 'src/features/user/entities/role_user.enum';
 
 @Injectable()
 export class WalletTransactionService {
@@ -82,10 +85,33 @@ export class WalletTransactionService {
     order: {
       id: 'DESC'
     },
-    relations: {
-      sender: true,
-        receiver: true
-      }
+    loadRelationIds:true,
+    // relations: {
+    //   sender: true,
+    //   receiver: true
+    // }
     })
+  }
+
+  async findRevenue(payload: Payload) {
+    const isBuyer = payload.role === UserRole.BUYER;
+
+    const result = await this.walletTransactionsRepository
+      .createQueryBuilder("tx")
+      .select("COALESCE(SUM(tx.amount), 0)", "total")
+      .where(
+        isBuyer
+          ? "tx.sender_id = :userId"
+          : "tx.receiver_id = :userId",
+        { userId: payload.sub }
+      )
+      .andWhere("tx.type = :type", {
+        type: WalletTransactionType.PAYMENT
+      })
+      .getRawOne();
+
+    return isBuyer
+      ? Number(result.total) 
+      : Number(result.total) ;
   }
 }
