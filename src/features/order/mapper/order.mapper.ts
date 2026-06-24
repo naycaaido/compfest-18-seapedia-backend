@@ -7,6 +7,7 @@ import { DeliveryMethod } from "../entities/delivery-method.enum"
 import { Order } from "../entities/order.entity"
 import { Address } from "src/features/address/entities/address.entity"
 import { OrderStatus } from "../entities/order-status.enum"
+import { Voucher } from "src/features/discount/voucher/entities/voucher.entity"
 
 export function mapToOrder(
   payload: Payload,
@@ -21,6 +22,8 @@ export function mapToOrder(
   totalFee: number,
   statusOrder:OrderStatus,
   overdue: Date,
+  voucher?:Voucher | undefined,
+  voucherPrice?:number | undefined
 ): DeepPartial<Order> {
 
   return {
@@ -56,6 +59,9 @@ export function mapToOrder(
         id:store.seller.id
       }
     },
+
+    voucher:voucher,
+    voucher_discount: voucherPrice,
 
     orderItems: cart.cartItems.map(cartItem => ({
       promo_discount: cartItem.product.promo != undefined ?

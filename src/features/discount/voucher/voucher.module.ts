@@ -16,10 +16,12 @@ import { Module } from "@nestjs/common";
     //   DiscountUsage,
     //   PromoProduct,
     //   Promo,
-      Voucher
+      Voucher,
+      DiscountUsage
     ]),
     SystemModule
   ],
+  exports:[VoucherService],
   providers: [VoucherService]
 })
 export class VoucherModule {}

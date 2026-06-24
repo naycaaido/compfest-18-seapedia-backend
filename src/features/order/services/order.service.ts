@@ -26,6 +26,8 @@ import { WalletTransactionType } from '../../wallet/wallet-transaction/entities/
 import { OrderStatus } from '../entities/order-status.enum';
 import { FindOrderDto } from '../dto/find-order.dto';
 import { DiscountService } from '../../discount/discount/discount.service';
+import { Voucher } from 'src/features/discount/voucher/entities/voucher.entity';
+import { VoucherService } from 'src/features/discount/voucher/voucher.service';
 
 @Injectable()
 export class OrderService {
@@ -43,6 +45,7 @@ export class OrderService {
     private readonly deliveryService:DeliveryService,
     private readonly systemService:SystemService,
     private readonly discountService:DiscountService,
+    private readonly voucherService:VoucherService,
     private dataSource:DataSource
   ) {}
 
@@ -73,6 +76,7 @@ export class OrderService {
     if(!cart){
       throw new NotFoundException(exceptionMessage(ExceptionType.NOT_FOUND,'Cart'))
     }
+    
     cart = await this.validatePromoItem(cart,payload.userRoleId)
     const order = await this.buildOrder(payload,dto,cart)
     return order;
@@ -287,6 +291,14 @@ export class OrderService {
         const saveOrder = await manager.save(order)
       
         await this.processPayment(manager,wallet,saveOrder,payload.sub,order.store.seller.id)
+        if(dto.voucher_code){
+          await this.discountService.addDiscountUsage(
+          manager,
+          payload.userRoleId,
+          order.voucher!.discount.id
+        )
+        }
+  
         await Promise.all(
           promoItems.map(item =>
             this.discountService.addDiscountUsage(
@@ -315,6 +327,9 @@ export class OrderService {
     return await this.orderRepository.find({
       where,
       cache:true,
+      order:{
+        id:'DESC'
+      },
       relations:{
         orderAddress:true,
         store:true,
@@ -380,7 +395,7 @@ export class OrderService {
     payload: Payload,
     dto: PreviewOrderDto,
     cart: Cart,
-    statusOrder: OrderStatus | undefined = OrderStatus.PROCCESS
+    statusOrder: OrderStatus | undefined = OrderStatus.PROCCESS,
   ): Promise<Order> {
     const address = await this.addressRepository.findOneBy({
       id: dto.address_id,
@@ -410,23 +425,32 @@ export class OrderService {
       )
     }
 
-    const distance = await this.deliveryService.calculateDistance(
+    const distance = this.deliveryService.calculateDistance(
       store.latitude!,
       store.longitude!,
       address.latitude!,
       address.longitude!
     )
+    let voucherPrice: number | undefined = undefined
+    let voucher : Voucher | undefined = undefined
 
     const subTotal = await this.calculateCartTotal(cart.cartItems,payload.userRoleId)
+
+    if(dto.voucher_code){
+      voucher = await this.voucherService.validateVoucherCode(dto.voucher_code, payload.userRoleId)
+      voucherPrice = (voucher.discount.discount_percantage / 100) * subTotal
+    }
+
     const deliveryPrice = deliveryFee(
       dto.delivery_method,
       distance.distanceKm
     )
+
     const taxFee = this.ppnCalculation(subTotal)
     const totalFee =
       subTotal +
       deliveryPrice +
-      taxFee
+      taxFee - (voucherPrice ?? 0)
   
     const orderData = mapToOrder(
       payload,
@@ -440,7 +464,9 @@ export class OrderService {
       taxFee,
       totalFee,
       statusOrder,
-    await this.overdue(dto.delivery_method)
+      await this.overdue(dto.delivery_method),
+      voucher,
+      voucherPrice
   )
 
   return this.orderRepository.create(orderData)

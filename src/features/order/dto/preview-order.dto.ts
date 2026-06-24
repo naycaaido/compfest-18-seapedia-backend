@@ -1,4 +1,4 @@
-import { IsEnum, IsNotEmpty, IsNumber } from "class-validator";
+import { IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString } from "class-validator";
 import { DeliveryMethod } from "../entities/delivery-method.enum";
 
 export class PreviewOrderDto{
@@ -11,4 +11,8 @@ export class PreviewOrderDto{
     @IsNotEmpty()
     @IsNumber()
     address_id!:number
+
+    @IsOptional()
+    @IsString()
+    voucher_code?:string
 }

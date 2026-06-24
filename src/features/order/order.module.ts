@@ -17,6 +17,7 @@ import { System } from '../system/system.entity';
 import { SystemModule } from '../system/system.module';
 import { DiscountModule } from '../discount/discount/discount.module';
 import { OrderHistoryService } from './services/order-history.service';
+import { VoucherModule } from '../discount/voucher/voucher.module';
 
 @Module({
   controllers: [OrderController],
@@ -35,7 +36,8 @@ import { OrderHistoryService } from './services/order-history.service';
     ]),
     DeliveryModule,
     DiscountModule,
-    SystemModule
+    SystemModule,
+    VoucherModule
   ],
   providers: [OrderService,OrderHistoryService],
 })
