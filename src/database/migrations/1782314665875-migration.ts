@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from "typeorm";
 
-export class Migration1782270398880 implements MigrationInterface {
-    name = 'Migration1782270398880'
+export class Migration1782314665875 implements MigrationInterface {
+    name = 'Migration1782314665875'
 
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(`CREATE TABLE "system" ("createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "deleted_at" TIMESTAMP, "id" SERIAL NOT NULL, "current_date" date NOT NULL, CONSTRAINT "PK_6b1e6b6f88da9888fde62379945" PRIMARY KEY ("id"))`);
@@ -9,6 +9,7 @@ export class Migration1782270398880 implements MigrationInterface {
         await queryRunner.query(`CREATE TABLE "user_roles" ("createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "deleted_at" TIMESTAMP, "id" SERIAL NOT NULL, "role" "public"."user_roles_role_enum" NOT NULL, "user_id" integer, CONSTRAINT "UQ_09d115a69b6014d324d592f9c42" UNIQUE ("user_id", "role"), CONSTRAINT "PK_8acd5cf26ebd158416f477de799" PRIMARY KEY ("id"))`);
         await queryRunner.query(`CREATE INDEX "idx_user_role_user_id" ON "user_roles" ("user_id") `);
         await queryRunner.query(`CREATE TABLE "sellers" ("createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "deleted_at" TIMESTAMP, "id" SERIAL NOT NULL, "user_id" integer, CONSTRAINT "REL_83f4670f0e114d0be3731bade8" UNIQUE ("user_id"), CONSTRAINT "PK_97337ccbf692c58e6c7682de8a2" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE TABLE "jobs" ("createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "deleted_at" TIMESTAMP, "id" SERIAL NOT NULL, "expired_date" TIMESTAMP NOT NULL, "earning" integer NOT NULL, "is_done" boolean NOT NULL DEFAULT false, "driver_id" integer, "order_id" integer, CONSTRAINT "REL_2cb9942b3a4fd4674ebb20406f" UNIQUE ("order_id"), CONSTRAINT "PK_cf0a6c42b72fcc7f7c237def345" PRIMARY KEY ("id"))`);
         await queryRunner.query(`CREATE TABLE "drivers" ("id" SERIAL NOT NULL, "user_id" integer, CONSTRAINT "REL_8e224f1b8f05ace7cfc7c76d03" UNIQUE ("user_id"), CONSTRAINT "PK_92ab3fb69e566d3eb0cae896047" PRIMARY KEY ("id"))`);
         await queryRunner.query(`CREATE TABLE "admins" ("id" SERIAL NOT NULL, "user_id" integer, CONSTRAINT "REL_2b901dd818a2a6486994d915a6" UNIQUE ("user_id"), CONSTRAINT "PK_e3b38270c97a854c48d2e80874e" PRIMARY KEY ("id"))`);
         await queryRunner.query(`CREATE TABLE "wallets" ("id" SERIAL NOT NULL, "balance" integer NOT NULL DEFAULT '0', "user_id" integer, CONSTRAINT "REL_92558c08091598f7a4439586cd" UNIQUE ("user_id"), CONSTRAINT "PK_8402e5df5a30a229380e83e4f7e" PRIMARY KEY ("id"))`);
@@ -65,15 +66,18 @@ export class Migration1782270398880 implements MigrationInterface {
         await queryRunner.query(`CREATE UNIQUE INDEX "idx_store_name_active" ON "stores" ("name") WHERE "deleted_at" IS NULL`);
         await queryRunner.query(`CREATE UNIQUE INDEX "idx_store_phone_active" ON "stores" ("phone_number") WHERE "deleted_at" IS NULL`);
         await queryRunner.query(`CREATE TYPE "public"."wallet_transactions_type_enum" AS ENUM('Top Up', 'Payment', 'Refund')`);
-        await queryRunner.query(`CREATE TABLE "wallet_transactions" ("id" SERIAL NOT NULL, "type" "public"."wallet_transactions_type_enum" NOT NULL, "amount" integer NOT NULL, "description" character varying(255) NOT NULL, "sender_id" integer, "receiver_id" integer, CONSTRAINT "PK_5120f131bde2cda940ec1a621db" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE TABLE "wallet_transactions" ("id" SERIAL NOT NULL, "type" "public"."wallet_transactions_type_enum" NOT NULL, "amount" integer NOT NULL, "description" character varying(255) NOT NULL, "sender_id" integer, "receiver_id" integer, "order_id" integer, CONSTRAINT "PK_5120f131bde2cda940ec1a621db" PRIMARY KEY ("id"))`);
         await queryRunner.query(`CREATE INDEX "wallet_transaction_type" ON "wallet_transactions" ("type") `);
         await queryRunner.query(`CREATE INDEX "idx_wallet_transaction_sender_id" ON "wallet_transactions" ("sender_id") `);
         await queryRunner.query(`CREATE INDEX "idx_wallet_transaction_receiver_id" ON "wallet_transactions" ("receiver_id") `);
+        await queryRunner.query(`CREATE INDEX "idx_wallet_transaction_order_id" ON "wallet_transactions" ("order_id") `);
         await queryRunner.query(`CREATE INDEX "idx_wallet_transactions_sender_type" ON "wallet_transactions" ("sender_id", "type") `);
         await queryRunner.query(`CREATE INDEX "idx_wallet_transactions_receiver_type" ON "wallet_transactions" ("receiver_id", "type") `);
         await queryRunner.query(`CREATE INDEX "idx_wallet_transactions_receiver_sender" ON "wallet_transactions" ("receiver_id", "sender_id") `);
         await queryRunner.query(`ALTER TABLE "user_roles" ADD CONSTRAINT "FK_87b8888186ca9769c960e926870" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "sellers" ADD CONSTRAINT "FK_83f4670f0e114d0be3731bade87" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "jobs" ADD CONSTRAINT "FK_2cb9942b3a4fd4674ebb20406ff" FOREIGN KEY ("order_id") REFERENCES "orders"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "jobs" ADD CONSTRAINT "FK_eec46a786cf24964fda9bffc028" FOREIGN KEY ("driver_id") REFERENCES "drivers"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "drivers" ADD CONSTRAINT "FK_8e224f1b8f05ace7cfc7c76d03b" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "admins" ADD CONSTRAINT "FK_2b901dd818a2a6486994d915a68" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "wallets" ADD CONSTRAINT "FK_92558c08091598f7a4439586cda" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
@@ -115,9 +119,11 @@ export class Migration1782270398880 implements MigrationInterface {
         await queryRunner.query(`ALTER TABLE "stores" ADD CONSTRAINT "FK_540fd9716dec62b65e2d15a8ced" FOREIGN KEY ("seller_id") REFERENCES "sellers"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "wallet_transactions" ADD CONSTRAINT "FK_fe71d9d868a527f2f25cb928601" FOREIGN KEY ("sender_id") REFERENCES "users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "wallet_transactions" ADD CONSTRAINT "FK_17cfacdbf6c3519cf2d39b870f2" FOREIGN KEY ("receiver_id") REFERENCES "users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "wallet_transactions" ADD CONSTRAINT "FK_8aeb5b463c31d097315acf23945" FOREIGN KEY ("order_id") REFERENCES "orders"("id") ON DELETE SET NULL ON UPDATE NO ACTION`);
     }
 
     public async down(queryRunner: QueryRunner): Promise<void> {
+        await queryRunner.query(`ALTER TABLE "wallet_transactions" DROP CONSTRAINT "FK_8aeb5b463c31d097315acf23945"`);
         await queryRunner.query(`ALTER TABLE "wallet_transactions" DROP CONSTRAINT "FK_17cfacdbf6c3519cf2d39b870f2"`);
         await queryRunner.query(`ALTER TABLE "wallet_transactions" DROP CONSTRAINT "FK_fe71d9d868a527f2f25cb928601"`);
         await queryRunner.query(`ALTER TABLE "stores" DROP CONSTRAINT "FK_540fd9716dec62b65e2d15a8ced"`);
@@ -159,11 +165,14 @@ export class Migration1782270398880 implements MigrationInterface {
         await queryRunner.query(`ALTER TABLE "wallets" DROP CONSTRAINT "FK_92558c08091598f7a4439586cda"`);
         await queryRunner.query(`ALTER TABLE "admins" DROP CONSTRAINT "FK_2b901dd818a2a6486994d915a68"`);
         await queryRunner.query(`ALTER TABLE "drivers" DROP CONSTRAINT "FK_8e224f1b8f05ace7cfc7c76d03b"`);
+        await queryRunner.query(`ALTER TABLE "jobs" DROP CONSTRAINT "FK_eec46a786cf24964fda9bffc028"`);
+        await queryRunner.query(`ALTER TABLE "jobs" DROP CONSTRAINT "FK_2cb9942b3a4fd4674ebb20406ff"`);
         await queryRunner.query(`ALTER TABLE "sellers" DROP CONSTRAINT "FK_83f4670f0e114d0be3731bade87"`);
         await queryRunner.query(`ALTER TABLE "user_roles" DROP CONSTRAINT "FK_87b8888186ca9769c960e926870"`);
         await queryRunner.query(`DROP INDEX "public"."idx_wallet_transactions_receiver_sender"`);
         await queryRunner.query(`DROP INDEX "public"."idx_wallet_transactions_receiver_type"`);
         await queryRunner.query(`DROP INDEX "public"."idx_wallet_transactions_sender_type"`);
+        await queryRunner.query(`DROP INDEX "public"."idx_wallet_transaction_order_id"`);
         await queryRunner.query(`DROP INDEX "public"."idx_wallet_transaction_receiver_id"`);
         await queryRunner.query(`DROP INDEX "public"."idx_wallet_transaction_sender_id"`);
         await queryRunner.query(`DROP INDEX "public"."wallet_transaction_type"`);
@@ -224,6 +233,7 @@ export class Migration1782270398880 implements MigrationInterface {
         await queryRunner.query(`DROP TABLE "wallets"`);
         await queryRunner.query(`DROP TABLE "admins"`);
         await queryRunner.query(`DROP TABLE "drivers"`);
+        await queryRunner.query(`DROP TABLE "jobs"`);
         await queryRunner.query(`DROP TABLE "sellers"`);
         await queryRunner.query(`DROP INDEX "public"."idx_user_role_user_id"`);
         await queryRunner.query(`DROP TABLE "user_roles"`);

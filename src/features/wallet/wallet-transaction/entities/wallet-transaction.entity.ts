@@ -1,6 +1,7 @@
 import { Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { WalletTransactionType } from "./wallet-transaction-type.enum";
 import { User } from "src/features/user/entities/user.entity";
+import { Order } from "src/features/order/entities/order.entity";
 
 @Entity({name:"wallet_transactions"})
 @Index('idx_wallet_transactions_receiver_sender', ['receiver', 'sender'])
@@ -29,4 +30,12 @@ export class WalletTransactions{
     @ManyToOne(() => User)
     @JoinColumn({ name: 'receiver_id'})
     receiver?: User;
+
+    @Index("idx_wallet_transaction_order_id")
+    @ManyToOne(() => Order, {
+    nullable: true,
+    onDelete: "SET NULL",
+    })
+    @JoinColumn({ name: "order_id" })
+    order?: Order;
 }

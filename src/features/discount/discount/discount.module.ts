@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { DiscountService } from './discount.service';
 import { DiscountController } from './discount.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -17,7 +17,7 @@ import { SystemModule } from '../../system/system.module';
       Promo,
       Voucher
     ]),
-    SystemModule
+    forwardRef(() => SystemModule)
   ],
   exports:[DiscountService],
   providers: [DiscountService],

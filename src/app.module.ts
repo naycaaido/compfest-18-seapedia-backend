@@ -35,6 +35,8 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { DiscountModule } from './features/discount/discount/discount.module';
 import { PromoModule } from './features/discount/promo/promo.module';
 import { VoucherModule } from './features/discount/voucher/voucher.module';
+import { JobModule } from './features/job/job.module';
+import { SchedulerModule } from './schedulers/scheduler.module';
 
 @Module({
   imports: [
@@ -89,9 +91,11 @@ import { VoucherModule } from './features/discount/voucher/voucher.module';
     DeliveryModule,
     SystemModule,
     ScheduleModule.forRoot(),
+    SchedulerModule,
     DiscountModule,
     PromoModule,
-    VoucherModule
+    VoucherModule,
+    JobModule
   ],
   controllers: [AppController],
   providers: [

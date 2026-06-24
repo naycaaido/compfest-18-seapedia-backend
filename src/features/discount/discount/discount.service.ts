@@ -19,15 +19,8 @@ export class DiscountService {
     private discountRepository : Repository<Discount>,
     @InjectRepository(DiscountUsage)
     private discountUsageRepository : Repository<DiscountUsage>,
-    @InjectRepository(Promo)
-    private promoRepository : Repository<Promo>,
-    @InjectRepository(Voucher)
-    private voucherRepository : Repository<Voucher>,
     private readonly systemService :SystemService,
   ) {}
-
-
-
   async findAll(
     dto:FindDiscountDto
   ) {
@@ -77,8 +70,7 @@ export class DiscountService {
       relations
     })
   }
-
-
+  
   async validatePromoUsage(buyerId:number | undefined, discountId:number, discountNew?:Discount | undefined){
     const businessDate = await this.systemService.getBusinessDate()
 

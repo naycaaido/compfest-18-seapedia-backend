@@ -54,7 +54,33 @@ export default class UserSeeder implements Seeder {
                 wallet:{
                     balance:100_000_000
                 }
-            }
+            },
+            {
+                full_name:"User 3",
+                email:"user3@gmail.com",
+                password:hashPassword,
+                roles:[
+                    {
+                        role:UserRole.DRIVER,
+                    },
+                ],
+                wallet:{
+                    balance:0
+                }
+            },
+            {
+                full_name:"User 4",
+                email:"user4@gmail.com",
+                password:hashPassword,
+                roles:[
+                    {
+                        role:UserRole.SELLER,
+                    },
+                ],
+                wallet:{
+                    balance:0
+                }
+            },
         ])
     }
 }

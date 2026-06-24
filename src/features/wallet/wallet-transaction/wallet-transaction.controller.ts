@@ -24,6 +24,7 @@ export class WalletTransactionController {
     return this.walletTransactionService.create(createWalletTransactionDto,payload);
   }
 
+  @UserRoleDecorator(UserRole.BUYER,UserRole.SELLER,UserRole.DRIVER)
   @Get()
   findAll(
     @Query() dto:FindWalletTransactionDto,
@@ -32,7 +33,7 @@ export class WalletTransactionController {
     return this.walletTransactionService.findAll(dto,payload);
   }
 
-  @UserRoleDecorator(UserRole.BUYER,UserRole.SELLER)
+  @UserRoleDecorator(UserRole.BUYER,UserRole.SELLER,UserRole.DRIVER)
   @Get('revenue')
   findRevenue(
     @PayloadJWT() payload:Payload

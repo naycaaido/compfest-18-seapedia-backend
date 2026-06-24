@@ -18,6 +18,7 @@ import WalletTransactionSeeder from './9_wallet_transaction.seed';
 import AddressSeeder from './10_address.seed';
 import SystemSeed from './11_system.seed';
 import SystemSeeder from './11_system.seed';
+import DiscountSeeder from './12_discount_seed';
 
 export interface Seeder {
     run(manager:EntityManager) :Promise<any>
@@ -42,5 +43,6 @@ export interface Seeder {
         await new CartSeeder().run(manager)
         await new WalletTransactionSeeder().run(manager)
         await new AddressSeeder().run(manager)
+        await new DiscountSeeder().run(manager)
     })
 })();

@@ -8,26 +8,25 @@ import { Payload } from 'src/common/utils';
 import { UserRole } from '../../user/entities/role_user.enum';
 import { exceptionMessage, ExceptionType } from 'src/common/exception';
 import { Cart } from '../../cart/cart/entities/cart.entity';
-import { log } from 'console';
 import { DeliveryService } from '../delivery/delivery.service';
 import { Address } from '../../address/entities/address.entity';
 import { PreviewOrderDto } from '../dto/preview-order.dto';
 import { Store } from '../../store/entities/store.entity';
 import { deliveryFee, DeliveryMethod } from '../entities/delivery-method.enum';
-import { Buyer } from '../../buyer/entities/buyer.entity';
 import { SystemService } from '../../system/system.service';
 import { mapToOrder } from '../mapper/order.mapper';
 import { Product } from '../../product/product/entities/product.entity';
 import { ProductTypeItem } from '../../product/product-type-item/entities/product-type-item.entity';
 import { CartItem } from '../../cart/cart-item/entities/cart-item.entity';
 import { Wallet } from '../../wallet/wallet/entities/wallet.entity';
-import { WalletTransactions } from '../../wallet/wallet-transaction/entities/wallet-transaction.entity';
 import { WalletTransactionType } from '../../wallet/wallet-transaction/entities/wallet-transaction-type.enum';
 import { OrderStatus } from '../entities/order-status.enum';
 import { FindOrderDto } from '../dto/find-order.dto';
 import { DiscountService } from '../../discount/discount/discount.service';
 import { Voucher } from 'src/features/discount/voucher/entities/voucher.entity';
 import { VoucherService } from 'src/features/discount/voucher/voucher.service';
+import { JobService } from 'src/features/job/job.service';
+import { WalletTransactionService } from 'src/features/wallet/wallet-transaction/wallet-transaction.service';
 
 @Injectable()
 export class OrderService {
@@ -46,6 +45,8 @@ export class OrderService {
     private readonly systemService:SystemService,
     private readonly discountService:DiscountService,
     private readonly voucherService:VoucherService,
+    private readonly jobService:JobService,
+    private readonly walletTransactionService : WalletTransactionService,
     private dataSource:DataSource
   ) {}
 
@@ -168,42 +169,6 @@ export class OrderService {
     }
   }
 
-  private async processPayment(
-    manager:EntityManager,
-    wallet:Wallet,
-    order:Order,
-    userId:number,
-    sellerId:number
-  ){
-    if(wallet.balance < order.total_fee){
-      throw new BadRequestException(
-        exceptionMessage(ExceptionType.BAD_REQUEST,"Insufficient Balance")
-      )
-    }
-
-    await manager.decrement(
-      Wallet,
-      {
-        id:wallet.id
-      },
-      "balance",
-      order.total_fee
-    )
-    await manager.save(
-      WalletTransactions,{
-        type:WalletTransactionType.PAYMENT,
-        amount:order.total_fee,
-        description:`Payment Order #${order.id}`,
-        receiver:{
-          id:sellerId
-        },
-        sender:{
-          id:userId
-        }
-      }
-    )
-  }
-
   private async clearCart(
     manager:EntityManager,
     cart:Cart
@@ -290,7 +255,8 @@ export class OrderService {
         )
         const saveOrder = await manager.save(order)
       
-        await this.processPayment(manager,wallet,saveOrder,payload.sub,order.store.seller.id)
+        await this.walletTransactionService.processPaymentOrder(manager,wallet,WalletTransactionType.PAYMENT,`Payment Order #${saveOrder.id}`,saveOrder.total_fee,payload.sub,order.store.seller.id,saveOrder.id)
+        await this.jobService.create(saveOrder,manager)
         if(dto.voucher_code){
           await this.discountService.addDiscountUsage(
           manager,

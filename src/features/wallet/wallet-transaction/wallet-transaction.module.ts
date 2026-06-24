@@ -13,6 +13,7 @@ import { Wallet } from '../wallet/entities/wallet.entity';
       Wallet
     ])
   ],
+  exports:[WalletTransactionService],
   providers: [WalletTransactionService],
 })
 export class WalletTransactionModule {}

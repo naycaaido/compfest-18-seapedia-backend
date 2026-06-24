@@ -33,6 +33,16 @@ export default class StoreSeeder implements Seeder{
                 seller:{
                     id:2
                 }
+            },
+            {
+                name:"Toko Raja Surabaya",
+                address: "Jawa Timur, Kota Surabaya, Kecamatan Wonokromo, Kelurahan Darmo, Jl. Raya Darmo No. 115",
+                latitude: -7.2906,
+                longitude: 112.7398,
+                phone_number:"+6282124805255",
+                seller:{
+                    id:3
+                }
             }
         ])
     }

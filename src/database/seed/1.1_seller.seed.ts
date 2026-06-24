@@ -16,6 +16,11 @@ export default class SellerSeeder implements Seeder {
                 user:{
                     id:2
                 }
+            },
+            {
+                user:{
+                    id:5
+                }
             }
         ])
     }

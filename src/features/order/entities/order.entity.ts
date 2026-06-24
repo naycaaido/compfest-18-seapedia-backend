@@ -8,6 +8,7 @@ import { Expose } from "class-transformer";
 import { OrderStatus } from "./order-status.enum";
 import { OrderHistory } from "./order-history.entity";
 import { Voucher } from "src/features/discount/voucher/entities/voucher.entity";
+import { Job } from "src/features/job/entities/job.entity";
 
 @Entity({name:"orders"})
 export class Order extends BaseEntity {
@@ -62,6 +63,11 @@ export class Order extends BaseEntity {
         cascade:['insert']
     })
     orderHistories!:OrderHistory[]
+
+    @OneToOne(() => Job, job => job.order,{
+        cascade:['insert']
+    })
+    job!:Job
 
     @Index("idx_order_store_id")
     @ManyToOne(() => Store, store => store.orders)

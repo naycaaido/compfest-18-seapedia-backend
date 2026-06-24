@@ -1,5 +1,6 @@
-import { BaseEntity, Column, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import { BaseEntity, Column, Entity, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { User } from "../../user/entities/user.entity";
+import { Job } from "src/features/job/entities/job.entity";
 
 @Entity({name:"drivers"})
 export class Driver extends BaseEntity {
@@ -11,4 +12,9 @@ export class Driver extends BaseEntity {
     })
     @JoinColumn({name:"user_id"})
     user!:User
+
+    @OneToMany(() => Job, jobs => jobs.driver,{
+        cascade:['insert']
+    })
+    jobs!:Job[]
 }
