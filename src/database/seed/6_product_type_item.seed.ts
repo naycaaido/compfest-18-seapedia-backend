@@ -12,7 +12,7 @@ export default class ProductTypeItemSeeder implements Seeder{
             // Product 1, Warna 1
             {
                 name:"Biru",
-                stock:5,
+                stock:20,
                 price:0,
                 type:{
                     id:1
@@ -20,7 +20,7 @@ export default class ProductTypeItemSeeder implements Seeder{
             },
             {
                 name:"Hitam",
-                stock:5,
+                stock:10,
                 price:0,
                 type:{
                     id:1

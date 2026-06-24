@@ -29,17 +29,23 @@ export class AuthGuard implements CanActivate {
       context.getHandler(),
       context.getClass()
     ])
-        
+
+    const request = ctx.getRequest<FastifyRequest>()
+    const token =  this.extractFromHeader(request);
+    let payloadVerify:any | undefined = undefined
+
+    if(token){
+      payloadVerify = await this.jwtSevice.verifyAsync(token)
+      request['user'] = payloadVerify;
+    }
+
     if(isPublic){
       return true
     }
-    const request = ctx.getRequest<FastifyRequest>()
-    const token = await this.extractFromHeader(request);
     if(!token){
       throw new UnauthorizedException("Token is not provided");
     }
-    const payloadVerify = await this.jwtSevice.verifyAsync(token)
-    request['user'] = payloadVerify;
+    
     if(roles != null && roles.includes(payloadVerify.role)){
       return true
     }if(roles == null){
@@ -52,8 +58,7 @@ export class AuthGuard implements CanActivate {
     }
   }
 
-  private async extractFromHeader(request:FastifyRequest){
-    
+  private extractFromHeader(request:FastifyRequest){
     const bearer = request.headers['authorization']
     if(!bearer){
       return null

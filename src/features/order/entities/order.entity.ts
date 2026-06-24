@@ -7,6 +7,7 @@ import { OrderItem } from "./order-item.entity";
 import { Expose } from "class-transformer";
 import { OrderStatus } from "./order-status.enum";
 import { OrderHistory } from "./order-history.entity";
+import { Voucher } from "src/features/discount/voucher/entities/voucher.entity";
 
 @Entity({name:"orders"})
 export class Order extends BaseEntity {
@@ -22,7 +23,7 @@ export class Order extends BaseEntity {
     @Column({type:'timestamp'})
     overdue!:Date
 
-    @Column({type:'int'})
+    @Column({type:'int'})  
     delivery_fee!:number
 
     @Column({type:'int'})
@@ -33,6 +34,15 @@ export class Order extends BaseEntity {
 
     @Column({type:'int'})
     total_fee!: number
+
+    @ManyToOne(() => Voucher, {
+        nullable: true
+    })
+    @JoinColumn({ name: 'voucher_id' })
+    voucher?: Voucher
+
+    @Column({ type: 'int', default: 0 })
+    voucher_discount!: number
 
     @Index("idx_order_status")
     @Column({

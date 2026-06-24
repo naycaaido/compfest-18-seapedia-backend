@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { OrderService } from './order.service';
+import { OrderService } from './services/order.service';
 import { OrderController } from './order.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Order } from './entities/order.entity';
@@ -15,6 +15,8 @@ import { Store } from '../store/entities/store.entity';
 import { Buyer } from '../buyer/entities/buyer.entity';
 import { System } from '../system/system.entity';
 import { SystemModule } from '../system/system.module';
+import { DiscountModule } from '../discount/discount/discount.module';
+import { OrderHistoryService } from './services/order-history.service';
 
 @Module({
   controllers: [OrderController],
@@ -32,8 +34,9 @@ import { SystemModule } from '../system/system.module';
       System
     ]),
     DeliveryModule,
+    DiscountModule,
     SystemModule
   ],
-  providers: [OrderService],
+  providers: [OrderService,OrderHistoryService],
 })
 export class OrderModule {}

@@ -3,6 +3,7 @@ import { Column, Entity, Index, JoinColumn, ManyToOne, OneToMany, PrimaryGenerat
 import { Order } from "./order.entity";
 import { Product } from "src/features/product/product/entities/product.entity";
 import { OrderProductType } from "./order-product-type.entity";
+import { Promo } from "src/features/discount/promo/entities/promo.entity";
 
 @Entity({name:"order_item"})
 export class OrderItem extends BaseEntity{
@@ -14,6 +15,15 @@ export class OrderItem extends BaseEntity{
 
     @Column({type:"int"})
     quantity!:number
+
+    @ManyToOne(() => Promo,{
+        nullable:true
+    })
+    @JoinColumn({name:'promo_id'})
+    promo?:Promo
+
+    @Column({ type: 'int', default: 0 })
+    promo_discount!: number
 
     @OneToMany(() => OrderProductType, orderProductTypes => orderProductTypes.orderItem,{
         cascade:['insert']

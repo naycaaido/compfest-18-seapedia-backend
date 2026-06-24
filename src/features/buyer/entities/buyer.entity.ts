@@ -5,6 +5,7 @@ import { Exclude } from "class-transformer";
 import { Cart } from "src/features/cart/cart/entities/cart.entity";
 import { Address } from "src/features/address/entities/address.entity";
 import { Order } from "src/features/order/entities/order.entity";
+import { DiscountUsage } from "src/features/discount/discount/entities/discount-usage.entity";
 
 @Entity({name:"buyers"})
 export class Buyer extends BaseEntity {
@@ -39,4 +40,7 @@ export class Buyer extends BaseEntity {
         cascade:['insert']
     })
     addresses!:Address[]
+
+    @OneToMany(() => DiscountUsage, discountUsage => discountUsage.buyer)
+    discountUsages!: DiscountUsage[]
 }

@@ -32,15 +32,19 @@ export class ProductController {
   @Public()
   @Get()
   findAll(
-    @Query() dto:FindProductDto
+    @Query() dto:FindProductDto,
+    @PayloadJWT() payload:Payload
   ) {
-    return this.productService.findAll(dto);
+    return this.productService.findAll(dto,payload);
   }
 
   @Public()
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.productService.findOne(+id);
+  findOne(
+    @Param('id') id: string,
+    @PayloadJWT() payload:Payload
+  ) {
+    return this.productService.findOne(+id,true,{},undefined,payload);
   }
 
   @SuccessMessage(successMessageGlobal(SuccessMessageType.UPDATE,"Product"))

@@ -1,5 +1,5 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
-import { OrderService } from './order.service';
+import { OrderService } from './services/order.service';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { UserRoleDecorator } from 'src/decorators/user-role.decorator';
 import { UserRole } from '../user/entities/role_user.enum';
@@ -9,10 +9,13 @@ import { PreviewOrderDto } from './dto/preview-order.dto';
 import { SuccessMessage } from 'src/decorators/success-message.decorator';
 import { successMessageGlobal, SuccessMessageType } from 'src/common/success';
 import { FindOrderDto } from './dto/find-order.dto';
+import { OrderHistoryService } from './services/order-history.service';
 
 @Controller('orders')
 export class OrderController {
-  constructor(private readonly orderService: OrderService) {}
+  constructor(
+    private readonly orderService: OrderService,
+    private readonly orderHistoryService:OrderHistoryService) {}
 
   @UserRoleDecorator(UserRole.BUYER,UserRole.SELLER)
   @SuccessMessage(successMessageGlobal(SuccessMessageType.RETRIEVE,'Orders'))
@@ -41,7 +44,7 @@ export class OrderController {
     @PayloadJWT() payload:Payload,
     @Param('id') id:string
   ) {
-    return this.orderService.findAllHistory(+id,payload);
+    return this.orderHistoryService.findAllHistory(+id,payload);
   }
 
   @SuccessMessage(successMessageGlobal(SuccessMessageType.CREATE,'Preview'))

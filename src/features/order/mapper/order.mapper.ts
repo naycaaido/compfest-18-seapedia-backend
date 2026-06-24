@@ -58,6 +58,11 @@ export function mapToOrder(
     },
 
     orderItems: cart.cartItems.map(cartItem => ({
+      promo_discount: cartItem.product.promo != undefined ?
+      cartItem.product.price * (cartItem.product.promo.discount.discount_percantage / 100) : 0,
+
+      promo:cartItem.product.promo ?? undefined,
+
       product: {
         id: cartItem.product.id
       },
@@ -65,7 +70,6 @@ export function mapToOrder(
       quantity: cartItem.quantity,
 
       sub_total: cartItem.sub_total,
-
       types: cartItem.cartProductTypes.map(typeCart => ({
         type: {
           id: typeCart.productType.id

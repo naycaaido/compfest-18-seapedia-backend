@@ -14,7 +14,6 @@ export default class ProductSeeder implements Seeder{
                 name:"Roda",
                 price:20_000,
                 stock:10,
-                is_available:true,
                 store:{
                     id:1
                 },
@@ -26,7 +25,6 @@ export default class ProductSeeder implements Seeder{
                 name:"Steering Wheel",
                 price:15_000,
                 stock:10,
-                is_available:true,
                 store:{
                     id:1
                 },
@@ -38,7 +36,6 @@ export default class ProductSeeder implements Seeder{
                 name:"Meja",
                 price:35_000,
                 stock:10,
-                is_available:true,
                 store:{
                     id:1
                 },
@@ -52,7 +49,6 @@ export default class ProductSeeder implements Seeder{
                 name:"Laptop",
                 price:12_000_000,
                 stock:10,
-                is_available:true,
                 store:{
                     id:2
                 },
@@ -64,7 +60,6 @@ export default class ProductSeeder implements Seeder{
                 name:"Hp Lenovo",
                 price:2_720_000,
                 stock:10,
-                is_available:true,
                 store:{
                     id:2
                 },
@@ -76,7 +71,6 @@ export default class ProductSeeder implements Seeder{
                 name:"Ayam 300 Gram",
                 price:21_000,
                 stock:10,
-                is_available:true,
                 store:{
                     id:2
                 },

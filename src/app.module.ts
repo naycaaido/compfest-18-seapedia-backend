@@ -32,6 +32,9 @@ import { OrderModule } from './features/order/order.module';
 import { DeliveryModule } from './features/order/delivery/delivery.module';
 import { SystemModule } from './features/system/system.module';
 import { ScheduleModule } from '@nestjs/schedule';
+import { DiscountModule } from './features/discount/discount/discount.module';
+import { PromoModule } from './features/discount/promo/promo.module';
+import { VoucherModule } from './features/discount/voucher/voucher.module';
 
 @Module({
   imports: [
@@ -86,6 +89,9 @@ import { ScheduleModule } from '@nestjs/schedule';
     DeliveryModule,
     SystemModule,
     ScheduleModule.forRoot(),
+    DiscountModule,
+    PromoModule,
+    VoucherModule
   ],
   controllers: [AppController],
   providers: [

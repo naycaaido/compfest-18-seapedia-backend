@@ -1,30 +1,31 @@
 import { BadRequestException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
-import { UpdateOrderDto } from './dto/update-order.dto';
+import { UpdateOrderDto } from '../dto/update-order.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { OrderHistory } from './entities/order-history.entity';
-import { Order } from './entities/order.entity';
+import { OrderHistory } from '../entities/order-history.entity';
+import { Order } from '../entities/order.entity';
 import { DataSource, EntityManager, FindOptionsWhere, Repository } from 'typeorm';
 import { Payload } from 'src/common/utils';
-import { UserRole } from '../user/entities/role_user.enum';
+import { UserRole } from '../../user/entities/role_user.enum';
 import { exceptionMessage, ExceptionType } from 'src/common/exception';
-import { Cart } from '../cart/cart/entities/cart.entity';
+import { Cart } from '../../cart/cart/entities/cart.entity';
 import { log } from 'console';
-import { DeliveryService } from './delivery/delivery.service';
-import { Address } from '../address/entities/address.entity';
-import { PreviewOrderDto } from './dto/preview-order.dto';
-import { Store } from '../store/entities/store.entity';
-import { deliveryFee, DeliveryMethod } from './entities/delivery-method.enum';
-import { Buyer } from '../buyer/entities/buyer.entity';
-import { SystemService } from '../system/system.service';
-import { mapToOrder } from './mapper/order.mapper';
-import { Product } from '../product/product/entities/product.entity';
-import { ProductTypeItem } from '../product/product-type-item/entities/product-type-item.entity';
-import { CartItem } from '../cart/cart-item/entities/cart-item.entity';
-import { Wallet } from '../wallet/wallet/entities/wallet.entity';
-import { WalletTransactions } from '../wallet/wallet-transaction/entities/wallet-transaction.entity';
-import { WalletTransactionType } from '../wallet/wallet-transaction/entities/wallet-transaction-type.enum';
-import { OrderStatus } from './entities/order-status.enum';
-import { FindOrderDto } from './dto/find-order.dto';
+import { DeliveryService } from '../delivery/delivery.service';
+import { Address } from '../../address/entities/address.entity';
+import { PreviewOrderDto } from '../dto/preview-order.dto';
+import { Store } from '../../store/entities/store.entity';
+import { deliveryFee, DeliveryMethod } from '../entities/delivery-method.enum';
+import { Buyer } from '../../buyer/entities/buyer.entity';
+import { SystemService } from '../../system/system.service';
+import { mapToOrder } from '../mapper/order.mapper';
+import { Product } from '../../product/product/entities/product.entity';
+import { ProductTypeItem } from '../../product/product-type-item/entities/product-type-item.entity';
+import { CartItem } from '../../cart/cart-item/entities/cart-item.entity';
+import { Wallet } from '../../wallet/wallet/entities/wallet.entity';
+import { WalletTransactions } from '../../wallet/wallet-transaction/entities/wallet-transaction.entity';
+import { WalletTransactionType } from '../../wallet/wallet-transaction/entities/wallet-transaction-type.enum';
+import { OrderStatus } from '../entities/order-status.enum';
+import { FindOrderDto } from '../dto/find-order.dto';
+import { DiscountService } from '../../discount/discount/discount.service';
 
 @Injectable()
 export class OrderService {
@@ -41,13 +42,12 @@ export class OrderService {
     private addressRepository: Repository<Address>,
     private readonly deliveryService:DeliveryService,
     private readonly systemService:SystemService,
+    private readonly discountService:DiscountService,
     private dataSource:DataSource
-  ) {
-    
-  }
+  ) {}
 
   async preview(payload:Payload,dto:PreviewOrderDto) {
-    const cart = await this.cartRepository.findOne({
+    let cart = await this.cartRepository.findOne({
       where:{
         buyer:{
           id:payload.userRoleId
@@ -55,7 +55,11 @@ export class OrderService {
       },
       relations:{
         cartItems:{
-          product:true,
+          product:{
+            promo:{
+              discount:true
+            }
+          },
           cartProductTypes:{
             productType:true,
             cartProductTypeItems:{
@@ -69,6 +73,7 @@ export class OrderService {
     if(!cart){
       throw new NotFoundException(exceptionMessage(ExceptionType.NOT_FOUND,'Cart'))
     }
+    cart = await this.validatePromoItem(cart,payload.userRoleId)
     const order = await this.buildOrder(payload,dto,cart)
     return order;
   }
@@ -219,7 +224,7 @@ export class OrderService {
   ) {
     return await this.dataSource.transaction(
       async manager => {
-        const cart = await manager.findOne(
+        let cart = await manager.findOne(
           Cart,
           {
             where:{
@@ -229,7 +234,11 @@ export class OrderService {
             },
             relations:{
               cartItems:{
-                product:true,
+                product:{
+                  promo:{
+                    discount:true
+                  },
+                },
                 cartProductTypes:{
                   cartProductTypeItems:{
                     productTypeItem:true
@@ -245,6 +254,7 @@ export class OrderService {
         if(!cart){
           throw new NotFoundException(exceptionMessage(ExceptionType.NOT_FOUND,"Cart"))
         }
+
         if(cart.cartItems.length === 0){
           throw new BadRequestException(exceptionMessage(ExceptionType.BAD_REQUEST,'Cart is empty'))
         }
@@ -262,7 +272,11 @@ export class OrderService {
         if(!wallet){
           throw new NotFoundException(exceptionMessage(ExceptionType.NOT_FOUND,"Wallet"))
         }
-
+        cart = await this.validatePromoItem(cart,payload.userRoleId)
+        
+        const promoItems = cart.cartItems.filter(
+          item => item.product.promo
+        )
         await this.validationStock(cart,manager)
         const order = await this.buildOrder(
           payload,
@@ -273,6 +287,15 @@ export class OrderService {
         const saveOrder = await manager.save(order)
       
         await this.processPayment(manager,wallet,saveOrder,payload.sub,order.store.seller.id)
+        await Promise.all(
+          promoItems.map(item =>
+            this.discountService.addDiscountUsage(
+              manager,
+              payload.userRoleId,
+              item.product.promo!.discount.id
+            )
+          )
+        )
         await this.reduceStock(manager,cart)
         await this.clearCart(manager,cart)
         return saveOrder
@@ -299,6 +322,7 @@ export class OrderService {
           product:{
             category:true,
             images:true,
+            
           },
           types:{
             orderProductTypeItems:{
@@ -336,26 +360,6 @@ export class OrderService {
       }
     })
     return order;
-  }
-
-  async findAllHistory(id:number,payload:Payload){
-    let where: FindOptionsWhere<Order> = {}
-    this.addRole(where,payload.role,payload.userRoleId)
-    where.id = id
-    const order = await this.orderRepository.findOneBy(where)
-    if (!order){
-      throw new NotFoundException(exceptionMessage(ExceptionType.NOT_FOUND,"Order"))
-    }
-    return await this.orderHistoryRepository.find({
-      where: {
-        order: {
-          id
-        }
-      },
-      order: {
-        createdAt: 'DESC'
-      }
-    })
   }
 
   private addRole(where:FindOptionsWhere<Order>, userRole:UserRole, id:number){
@@ -413,11 +417,7 @@ export class OrderService {
       address.longitude!
     )
 
-    const subTotal = cart.cartItems.reduce(
-      (sum, item) => sum + item.sub_total,
-      0
-    )
-
+    const subTotal = await this.calculateCartTotal(cart.cartItems,payload.userRoleId)
     const deliveryPrice = deliveryFee(
       dto.delivery_method,
       distance.distanceKm
@@ -427,7 +427,7 @@ export class OrderService {
       subTotal +
       deliveryPrice +
       taxFee
-
+  
     const orderData = mapToOrder(
       payload,
       cart,
@@ -444,6 +444,23 @@ export class OrderService {
   )
 
   return this.orderRepository.create(orderData)
+  }
+
+  private async validatePromoItem(cart:Cart,buyerId:number){
+    await Promise.all(
+      cart.cartItems.map( async item => {
+        const promo = item.product.promo
+
+        if(!promo){
+          return
+        }
+      const canUsePromo = await this.discountService.validatePromoUsage(buyerId,promo.discount.id)
+      if (!canUsePromo) {
+          item.product.promo = null as any
+        }
+      })
+    )
+    return cart
   }
 
   async update(id: number, payload:Payload,updateOrderDto: UpdateOrderDto) {
@@ -470,5 +487,56 @@ export class OrderService {
     })
     
     return true;
+  }
+
+  private async calculateDiscount(item:CartItem,buyerId:number):Promise<number>{
+    const promo = item.product.promo
+
+    if(!promo){
+      return 0
+    }
+
+    const canUsePromo = await this.discountService.validatePromoUsage(buyerId,promo.discount.id)
+
+    if(!canUsePromo){
+      return 0
+    }
+
+    const discountPercantage = promo.discount.discount_percantage / 100
+    return (item.product.price * discountPercantage)
+  }
+
+  private async calculateCartItemSubtotal(
+    item:CartItem,
+    buyerId:number,
+  ):Promise<number>{
+    const extraPrice = item.cartProductTypes
+    .flatMap(type =>type.cartProductTypeItems)
+    .reduce(
+      (sum,item) => sum + item.productTypeItem.price,
+      0
+    )
+    const discount = await this.calculateDiscount(item,buyerId)
+    return (
+      (
+        item.product.price - discount + extraPrice
+      ) * item.quantity
+    )
+  }
+
+  private async calculateCartTotal(cartItems:CartItem[],buyerId:number){
+    const subTotals = await Promise.all(
+      cartItems.map(item => 
+        this.calculateCartItemSubtotal(
+          item,
+          buyerId
+        )
+      )
+    )
+    const subTotal = subTotals.reduce(
+      (sum,value) => sum + value,
+      0
+    )
+    return subTotal
   }
 }

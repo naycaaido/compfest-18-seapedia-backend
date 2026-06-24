@@ -11,17 +11,24 @@ import { exceptionMessage, ExceptionType } from 'src/common/exception';
 import { Product } from 'src/features/product/product/entities/product.entity';
 import { Buyer } from 'src/features/buyer/entities/buyer.entity';
 import { log } from 'console';
+import { CartItem } from '../cart-item/entities/cart-item.entity';
+import { SystemService } from 'src/features/system/system.service';
+import { DiscountService } from 'src/features/discount/discount/discount.service';
 
 @Injectable()
 export class CartService {
   constructor(
     @InjectRepository(Cart)
     private cartRepository : Repository<Cart>,
-    private readonly cartItemService:CartItemService
+    @InjectRepository(CartItem)
+    private cartItemRepository : Repository<CartItem>,
+    private readonly cartItemService:CartItemService,
+    private readonly discountService:DiscountService,
+    private readonly systemService:SystemService,
   ) {}
 
   async findCart(payload:Payload) {
-    return await this.cartRepository.findOne({
+    const cart  = await this.cartRepository.findOne({
       where:{
         buyer:{
           id:payload.userRoleId
@@ -29,10 +36,32 @@ export class CartService {
       },
       relations:[
         "cartItems.product.images",
+        "cartItems.product.promo.discount",
         "cartItems.cartProductTypes.productType",
         "cartItems.cartProductTypes.cartProductTypeItems.productTypeItem",
       ]
     })
+
+    if(!cart){
+      throw new NotFoundException(exceptionMessage(ExceptionType.NOT_FOUND,'Cart'))
+    }
+
+    const cartItems = await Promise.all(
+        cart.cartItems.map(async item => ({
+        ...item,
+        sub_total: await this.calculateCartItemSubtotal(item,payload),
+      }))
+    )
+
+    const subTotal = cartItems.reduce(
+      (sum, item) => sum + item.sub_total,
+      0,
+    )
+    return {
+      ...cart,
+      cartItems,
+      sub_total: subTotal,
+    }
   }
 
   async create(createCartDto: CreateCartItemDto,payload:Payload) {
@@ -53,46 +82,84 @@ export class CartService {
       const message = `${activeAddressIsNull ? "Buyer must at least have one address, " :""}${phoneNumberIsNull ? "Buyer must have phone number" :""}`
       throw new ForbiddenException(exceptionMessage(ExceptionType.FORBIDDEN,message))
     }
-    const result = await this.cartItemService.create(createCartDto,cart)
+    const result = await this.cartItemService.create(createCartDto,cart,payload)
     if(cart.store_id === null){
       cart.store_id = result.storeId
       await this.cartRepository.save(cart)
     }
-    await this.recalculateSubtotal(payload.userRoleId)
     return result.cartItem
-  }
-
-  async recalculateSubtotal(buyerId: number) {
-    const cart = await this.cartRepository.findOneOrFail({
-      where: { 
-        buyer:{
-          id:buyerId
-        }
-       },
-      relations: {
-        cartItems: true
-      }
-    })
-
-    cart.sub_total = cart.cartItems.reduce(
-      (sum, item) => sum + item.sub_total,
-      0
-    ) 
-    if(cart.cartItems.length === 0){
-      cart.store_id = null
-    }
-    await this.cartRepository.save(cart)
   }
 
   async update(id: number, updateCartDto: UpdateCartItemDto,payload:Payload) {
     const cartItem = await this.cartItemService.update(id,updateCartDto,payload.userRoleId)
-    await this.recalculateSubtotal(payload.userRoleId)
     return cartItem
+  }
+
+  private async calculateCartItemSubtotal(cartItem: CartItem,payload:Payload): Promise<number> {
+    const extraPrice = cartItem.cartProductTypes
+      .flatMap(type => type.cartProductTypeItems)
+      .reduce(
+        (sum, item) => sum + item.productTypeItem.price,
+        0,
+      )
+
+      
+    const discount = await this.promoPrice(cartItem.product,payload)
+
+    return (
+      (
+        cartItem.product.price -
+        discount +
+        extraPrice
+      ) * cartItem.quantity
+    )
+  }
+
+  private async promoPrice(product: Product,payload:Payload): Promise<number> {
+    const promo = product.promo
+    if (!promo) {
+      return 0
+    }
+    const canUsePromo = await this.discountService.validatePromoUsage(
+        payload.userRoleId,
+        promo.discount.id,
+      )
+
+    if (!canUsePromo) {
+      return 0
+    }
+    const discountPercantage = promo.discount.discount_percantage
+
+    return (
+      product.price *
+      discountPercantage /
+      100
+    )
   }
 
   async remove(id: number,payload:Payload) {
     await this.cartItemService.remove(id,payload)
-    await this.recalculateSubtotal(payload.userRoleId)
+    const cart = await this.cartRepository.findOneBy({
+    buyer: {
+      id: payload.userRoleId
+      }
+    })
+
+    if (cart) {
+      const count = await this.cartItemRepository.count({
+        where: {
+          cart: {
+            id: cart.id
+          }
+        }
+      })
+
+      if (count === 0) {
+        cart.store_id = null
+        await this.cartRepository.save(cart)
+      }
+    }
+
     return true
   }
 
@@ -111,4 +178,5 @@ export class CartService {
     await this.cartRepository.save(cart)
     return true
   }
+
 }

@@ -3,7 +3,7 @@ import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Product } from './entities/product.entity';
-import { DataSource, FindOptionsRelations, FindOptionsWhere, ILike, In, Repository } from 'typeorm';
+import { DataSource, FindOptionsRelations, FindOptionsWhere, ILike, In, MoreThan, Repository } from 'typeorm';
 import { log } from 'console';
 import { File } from 'src/features/image/constant';
 import { DirType, Payload } from 'src/common/utils';
@@ -21,6 +21,7 @@ import path from 'path';
 import { types } from 'util';
 import { ProductCategoryService } from '../product-category/product-category.service';
 import { UpdateProductCategoriesDto } from '../product-category/dto/update-product-categories.dto';
+import { DiscountService } from 'src/features/discount/discount/discount.service';
 
 
 @Injectable()
@@ -35,16 +36,24 @@ export class ProductService {
     private readonly storeService:StoreService,
     @Inject(forwardRef(() => ProductCategoryService))
     private readonly productCategoryService:ProductCategoryService,
+    private readonly discountService:DiscountService,
     private readonly dataSource:DataSource
     
   ) {}
 
-  private static readonly productRelation = [
-      'images',
-      'types.items',
-      'store',
-      'category'
-  ];
+
+
+  private static productRelation : FindOptionsRelations<Product> = {
+    promo:{
+      discount:true
+    },
+    images:true,
+    types:{
+      items:true
+    },
+    store:true,
+    category:true
+  }
 
   async create(createProductDto: CreateProductDto,files:File[],payload:Payload) {
     // Experiment Transactions
@@ -107,7 +116,7 @@ export class ProductService {
     }
   }
 
-  async findAll(findProductDto:FindProductDto) {
+  async findAll(findProductDto:FindProductDto,payload:Payload) {
     let where:FindOptionsWhere<Product> = {}
     if (findProductDto.store_id){
       where.store = {
@@ -122,17 +131,35 @@ export class ProductService {
     if (findProductDto.name){
       where.name = ILike(`%${findProductDto.name}%`)
     }
-    return await this.productRepository.find({
+    const products = await this.productRepository.find({
       where:where,
       cache:true,
       take:findProductDto.limit,
       relations:ProductService.productRelation
     });
+    
+    if(payload.sub == -1){
+      return products
+    }
+    const promoProduct = products.filter(product => product.promo?.discount?.id)
+    await Promise.all(
+      promoProduct.map(async product =>{
+        const canUsePromo = await this.discountService.validatePromoUsage(
+          payload.userRoleId,
+          product.promo!.discount.id
+        )
+        if(!canUsePromo){
+          product.promo = null as any
+        }
+      })
+    )
+    return products
   }
 
-  async findOne(id: number, relations:boolean = true, relationsCustom:FindOptionsRelations<Product> = {},seller?:object) {
+  // bawah beneirn juga
+  async findOne(id: number, relations:boolean = true, relationsCustom:FindOptionsRelations<Product> = {},seller?:object, payload?:Payload) {
     const relation = Object.keys(relationsCustom).length > 0  ? relationsCustom : relations ? ProductService.productRelation : undefined
-     return await this.productRepository.findOne({
+    const product = await this.productRepository.findOne({
       cache:true,
       where:{
         id,
@@ -142,6 +169,41 @@ export class ProductService {
       },
       relations:relation
     });
+    
+    if (!product) {
+      return null
+    }
+
+    if(payload){
+      await this.applyPromoValidation(product,payload)
+    }
+
+    return product
+  }
+
+  private async applyPromoValidation(
+    product: Product,
+    payload: Payload,
+  ) {
+    if (payload.sub === -1) {
+      return
+    }
+
+    const discountId = product.promo?.discount?.id
+
+    if (!discountId) {
+      return
+    }
+
+    const canUsePromo =
+      await this.discountService.validatePromoUsage(
+        payload.userRoleId,
+        discountId,
+      )
+
+    if (!canUsePromo) {
+      product.promo = null as any
+    }
   }
 
   async existBySeller(sellerId:number,productIds:number[]){

@@ -4,6 +4,7 @@ import { Cart } from "../../cart/entities/cart.entity";
 import { Product } from "src/features/product/product/entities/product.entity";
 import { CartProductType } from "../../cart-product-type/entities/cart-product-type.entity";
 import { Expose } from "class-transformer";
+import { Promo } from "src/features/discount/promo/entities/promo.entity";
 
 @Entity({name:"cart_item"})
 export class CartItem extends BaseEntity {

@@ -1,10 +1,12 @@
 import { BaseEntity } from "src/common/base_entity";
 import { Store } from "src/features/store/entities/store.entity";
-import { Column, Entity, PrimaryGeneratedColumn,Check, OneToMany, ManyToOne, JoinColumn, Index, RelationId } from "typeorm";
+import { Column, Entity, PrimaryGeneratedColumn,Check, OneToMany, ManyToOne, JoinColumn, Index, RelationId, OneToOne } from "typeorm";
 import { ProductCategory } from "../../product-category/entities/product-category.entity";
 import { ProductImage } from "../../product-image/entities/product-image.entity";
 import { ProductType } from "../../product-type/entities/product-type.entity";
 import { OrderItem } from "src/features/order/entities/order-item.entity";
+import { Expose } from "class-transformer";
+import { Promo } from "src/features/discount/promo/entities/promo.entity";
 
 @Entity({name:"products"})
 @Index('idx_product_store_type', ['store', 'category'])
@@ -29,6 +31,13 @@ export class Product extends BaseEntity{
         asExpression: `CASE WHEN stock = 0 THEN false ELSE true END`,
     })
     is_available!:boolean
+
+    @ManyToOne(() => Promo,{
+        nullable:true,
+        onDelete:'SET NULL'
+    })
+    @JoinColumn({name:'promo_id'})
+    promo?:Promo
 
     @OneToMany(() => ProductImage, productImage => productImage.product,{
         cascade:true

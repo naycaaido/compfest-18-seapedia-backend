@@ -26,8 +26,8 @@ export class CartItemService {
     private readonly productTypeItemService:ProductTypeItemService,
   ) {}
 
-  async create(createCartItemDto: CreateCartItemDto,cart:Cart) {
-    const product = await this.productService.findOne(createCartItemDto.product_id,false,{store:true})
+  async create(createCartItemDto: CreateCartItemDto,cart:Cart,payload:Payload) {
+    const product = await this.productService.findOne(createCartItemDto.product_id,false,{store:true},undefined,payload)
     if(!product){
       throw new NotFoundException(exceptionMessage(ExceptionType.NOT_FOUND,'Product'))
     }
@@ -62,27 +62,6 @@ export class CartItemService {
     }
   }
 
-  async findAll(dto:CreateCartItemDto,cartId:number) {
-    const cartItems = await this.cartItemRepository.find({
-      where: {
-        cart: {
-          id:cartId
-        },
-        product: {
-          id: dto.product_id
-        }
-      },
-      relations: {
-        cartProductTypes: {
-          cartProductTypeItems: {
-            productTypeItem: true
-          }
-        }
-      }
-    })
-    return cartItems;
-  }
-
   async existing(dto:CreateCartItemDto,cartId:number,product:Product,productTypeItems:ProductTypeItem[]){
     const cartItems = await this.findAll(dto,cartId)
     const dtoItemIds = dto.types
@@ -112,6 +91,27 @@ export class CartItemService {
 
   private extraPrice(productTypeItems:ProductTypeItem[]){
     return productTypeItems.reduce((sum,item) => sum + item.price,0)
+  }
+
+  async findAll(dto:CreateCartItemDto,cartId:number) {
+    const cartItems = await this.cartItemRepository.find({
+      where: {
+        cart: {
+          id:cartId
+        },
+        product: {
+          id: dto.product_id
+        }
+      },
+      relations: {
+        cartProductTypes: {
+          cartProductTypeItems: {
+            productTypeItem: true
+          }
+        }
+      }
+    })
+    return cartItems;
   }
 
   findOne(id: number) {

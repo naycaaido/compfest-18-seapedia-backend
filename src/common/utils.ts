@@ -41,3 +41,8 @@ export const enum DirType {
    STORE = 'store',
    PRODUCT = 'products'
 }
+
+export const addTimeToDate = (date:Date) => {
+  date.setHours(23,59,59,999)
+  return date
+};

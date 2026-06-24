@@ -8,6 +8,7 @@ import { ImageModule } from 'src/features/image/image.module';
 import { ProductTypeModule } from '../product-type/product-type.module';
 import { StoreModule } from 'src/features/store/store.module';
 import { ProductCategoryModule } from '../product-category/product-category.module';
+import { DiscountModule } from 'src/features/discount/discount/discount.module';
 
 @Module({
   controllers: [ProductController],
@@ -19,7 +20,8 @@ import { ProductCategoryModule } from '../product-category/product-category.modu
     SellerModule,
     StoreModule,
     ImageModule,
-    forwardRef(() => ProductCategoryModule)
+    forwardRef(() => ProductCategoryModule),
+    DiscountModule
     
   ],
   exports:[
