@@ -4,12 +4,15 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { OrderHistory } from "src/features/order/entities/order-history.entity";
 import { OrderStatus } from "src/features/order/entities/order-status.enum";
 import { Order } from "src/features/order/entities/order.entity";
+import { ProductTypeItem } from "src/features/product/product-type-item/entities/product-type-item.entity";
+import { ProductType } from "src/features/product/product-type/entities/product-type.entity";
+import { Product } from "src/features/product/product/entities/product.entity";
 import { System } from "src/features/system/system.entity";
 import { SystemService } from "src/features/system/system.service";
 import { WalletTransactionType } from "src/features/wallet/wallet-transaction/entities/wallet-transaction-type.enum";
 import { WalletTransactions } from "src/features/wallet/wallet-transaction/entities/wallet-transaction.entity";
 import { Wallet } from "src/features/wallet/wallet/entities/wallet.entity";
-import { Brackets, DataSource, Repository } from "typeorm";
+import { Brackets, DataSource, EntityManager, Repository } from "typeorm";
 
 
 @Injectable()
@@ -57,6 +60,18 @@ export class OrderSchedulerService {
         },
         relations: {
           buyer: true,
+          orderItems:{
+            product:{
+              types:{
+                items:true
+              }
+            },
+            types:{
+              orderProductTypeItems:{
+                item:true
+              }
+            }
+          }
         },
       });
 
@@ -121,7 +136,50 @@ export class OrderSchedulerService {
           status_order: OrderStatus.RETURN,
         },
       );
+      await this.restoreOrderStock(manager, order);
     });
+  }
+
+  private async restoreOrderStock(manager:EntityManager,order:Order){
+    const productStockMap = new Map<number, number>();
+    const typeItemStockMap = new Map<number, number>();
+
+    for (const orderItem of order.orderItems) {
+      productStockMap.set(
+        orderItem.product.id,
+        (productStockMap.get(orderItem.product.id) ?? 0) +
+          orderItem.quantity,
+      );
+        for (const type of orderItem.types) {
+        for (const typeItem of type.orderProductTypeItems) {
+          typeItemStockMap.set(
+            typeItem.item.id,
+            (typeItemStockMap.get(typeItem.item.id) ?? 0) +
+              orderItem.quantity,
+          );
+        }
+      }
+    }
+    await Promise.all([
+      ...Array.from(productStockMap.entries()).map(
+        ([productId,quantity]) => 
+          manager.increment(
+            Product,
+            {id:productId},
+            'stock',
+            quantity
+          )
+      ),
+      ...Array.from(typeItemStockMap.entries()).map(
+        ([itemId,quantity]) =>
+          manager.increment(
+            ProductTypeItem,
+            {id:itemId},
+            'stock',
+            quantity
+          )
+      )
+    ])
   }
   @Cron('* * * * *') 
   async handleCron(){

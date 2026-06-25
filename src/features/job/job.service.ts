@@ -101,7 +101,10 @@ export class JobService {
   async findAvailableJob(){
     return await this.jobRepository.find({
       where:{
-        driver_id: IsNull()
+        driver_id: IsNull(),
+        order:{
+          status:OrderStatus.WAITING_DRIVER
+        }
       },
       relations:{
         order:{

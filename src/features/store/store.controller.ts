@@ -27,6 +27,17 @@ export class StoreController {
     return this.storeService.create(payload.userRoleId,dto,file?.[0] ?? null);
   }
 
+  @UserRoleDecorator(UserRole.SELLER)
+  @UseInterceptors(new MultipartInterceptor('store_image',UpdateStoreDto))
+  @SuccessMessage(successMessageGlobal(SuccessMessageType.UPDATE,'store'))
+  @Patch()
+  update(
+    @PayloadJWT() payload:Payload,
+    @MultipartData('store_image') {dto,file},
+  ) {
+    return this.storeService.update(dto,payload,file?.[0] ?? null);
+  }
+
   @Public()
   @SuccessMessage(successMessageGlobal(SuccessMessageType.RETRIEVE,'store'))
   @Get()
@@ -34,23 +45,10 @@ export class StoreController {
     return this.storeService.findAll();
   }
 
-  @UserRoleDecorator(UserRole.SELLER)
-  @Get('seller')
-  findOneByPayload(
-    @PayloadJWT() payload:Payload
-  ) {
-    return this.storeService.findOneByPayload(payload);
-  }
-
   @Public()
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.storeService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateStoreDto: UpdateStoreDto) {
-    return this.storeService.update(+id, updateStoreDto);
   }
 
   @SuccessMessage(successMessageGlobal(SuccessMessageType.REMOVE,'store'))

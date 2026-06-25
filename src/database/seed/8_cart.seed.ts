@@ -8,48 +8,48 @@ export default class CartSeeder implements Seeder {
         const repository = manager.getRepository(Cart)
         await repository.save([
             {
-                store_id:1,
+                store_id:2,
                 buyer:{
                     id:1
                 },
-                sub_total: 178350,
+                sub_total: 63000,
                 cartItems:[
                     {
                         product:{
-                            id:1
+                            id:6
                         },
-                        sub_total: 178350,
+                        sub_total: 63000,
                         quantity:3,
                         cartProductTypes:[
                             {
                                 productType:{
-                                    id:1
+                                    id:6
                                 },
                                 cartProductTypeItems:[
                                     {
                                         productTypeItem:{
-                                            id:1
-                                        }
-                                    }
-                                ]
-                            },
-                            {
-                                productType:{
-                                    id:2
-                                },
-                                cartProductTypeItems:[
-                                    {
-                                        productTypeItem:{
-                                            id:3
-                                        }
-                                    },
-                                    {
-                                        productTypeItem:{
-                                            id:4
+                                            id:11
                                         }
                                     }
                                 ]
                             }
+                            // {
+                            //     productType:{
+                            //         id:2
+                            //     },
+                            //     cartProductTypeItems:[
+                            //         {
+                            //             productTypeItem:{
+                            //                 id:3
+                            //             }
+                            //         },
+                            //         {
+                            //             productTypeItem:{
+                            //                 id:4
+                            //             }
+                            //         }
+                            //     ]
+                            // }
                         ]
                     }
                 ]

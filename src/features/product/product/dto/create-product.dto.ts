@@ -19,11 +19,6 @@ export class CreateProductDto {
     @Min(0)
     stock!:number
 
-    @IsNotEmpty()
-    @Type(() => Boolean)
-    @IsBoolean()
-    is_available!:boolean
-
     @IsOptional()
     @Type(() => Number)
     @IsNumber()
