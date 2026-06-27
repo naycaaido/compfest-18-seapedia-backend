@@ -81,11 +81,9 @@ export class Order extends BaseEntity {
 
     @Index("idx_order_order_address_id")
     @Expose({name:"order_address"})
-    @OneToOne(() => OrderAddress, orderAddressr => orderAddressr.order,{
+    @OneToOne(() => OrderAddress, orderAddress => orderAddress.order,{
         cascade:['insert']
     })
     @JoinColumn({name:"order_address_id"})
     orderAddress!:OrderAddress
-
-    // voucher
 }

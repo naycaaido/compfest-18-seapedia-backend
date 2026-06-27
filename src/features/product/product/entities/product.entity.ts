@@ -60,7 +60,9 @@ export class Product extends BaseEntity{
     store!:Store
 
     @Index("idx_product_product_category_id")
-    @ManyToOne(() => ProductCategory, category => category.products,)
+    @ManyToOne(() => ProductCategory, category => category.products,{
+        cascade:['insert']
+    })
     @JoinColumn({name:"category_id"})
     category!:ProductCategory
 }

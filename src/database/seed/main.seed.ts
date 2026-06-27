@@ -19,6 +19,7 @@ import AddressSeeder from './10_address.seed';
 import SystemSeed from './11_system.seed';
 import SystemSeeder from './11_system.seed';
 import DiscountSeeder from './12_discount_seed';
+import OrderSeeder from './13_order_seed';
 
 export interface Seeder {
     run(manager:EntityManager) :Promise<any>
@@ -41,8 +42,9 @@ export interface Seeder {
         await new ProductTypeItemSeeder().run(manager)
         await new ProductImageSeeder().run(manager)
         await new CartSeeder().run(manager)
-        await new WalletTransactionSeeder().run(manager)
         await new AddressSeeder().run(manager)
         await new DiscountSeeder().run(manager)
+        await new OrderSeeder().run(manager)
+        await new WalletTransactionSeeder().run(manager)
     })
 })();

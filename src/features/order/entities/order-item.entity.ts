@@ -43,5 +43,4 @@ export class OrderItem extends BaseEntity{
     })
     @JoinColumn({name:"product_id"})
     product!:Product
-    // promo id
 }

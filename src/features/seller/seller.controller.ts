@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
 import { SellerService } from './seller.service';
 import { CreateSellerDto } from './dto/create-seller.dto';
 import { UpdateSellerDto } from './dto/update-seller.dto';
@@ -7,6 +7,7 @@ import { Payload } from 'src/common/utils';
 import { StoreService } from '../store/store.service';
 import { UserRoleDecorator } from 'src/decorators/user-role.decorator';
 import { UserRole } from '../user/entities/role_user.enum';
+import { FindProductBySellerDto } from './dto/find-product-by-seller.dto';
 
 @UserRoleDecorator(UserRole.SELLER)
 @Controller('seller')
@@ -24,8 +25,9 @@ export class SellerController {
   @Get('products')
   findAll(
     @PayloadJWT() payload:Payload,
+    @Query() dto: FindProductBySellerDto
   ) {
-    return this.sellerService.findAllProducts(payload);
+    return this.sellerService.findAllProducts(payload,dto);
   }
 
   @Get('store')
