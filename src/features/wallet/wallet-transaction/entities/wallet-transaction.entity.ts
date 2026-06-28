@@ -2,12 +2,13 @@ import { Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn } 
 import { WalletTransactionType } from "./wallet-transaction-type.enum";
 import { User } from "src/features/user/entities/user.entity";
 import { Order } from "src/features/order/entities/order.entity";
+import { BaseEntity } from "src/common/base_entity";
 
 @Entity({name:"wallet_transactions"})
 @Index('idx_wallet_transactions_receiver_sender', ['receiver', 'sender'])
 @Index('idx_wallet_transactions_receiver_type', ['receiver', 'type'])
 @Index('idx_wallet_transactions_sender_type', ['sender', 'type'])
-export class WalletTransactions{
+export class WalletTransactions extends BaseEntity{
     @PrimaryGeneratedColumn()
     id!:number
 

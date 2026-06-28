@@ -26,7 +26,7 @@ export default class UserSeeder implements Seeder {
                     }
                 ],
                 wallet:{
-                    balance:40_000
+                    balance:0
                 }
             },
             {

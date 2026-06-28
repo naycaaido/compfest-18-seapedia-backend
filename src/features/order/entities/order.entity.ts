@@ -1,4 +1,4 @@
-import { BaseEntity, Column, Entity, Index, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn, Timestamp } from "typeorm";
+import {  Column, Entity, Index, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn, Timestamp } from "typeorm";
 import { DeliveryMethod } from "./delivery-method.enum";
 import { Store } from "src/features/store/entities/store.entity";
 import { Buyer } from "src/features/buyer/entities/buyer.entity";
@@ -9,6 +9,7 @@ import { OrderStatus } from "./order-status.enum";
 import { OrderHistory } from "./order-history.entity";
 import { Voucher } from "src/features/discount/voucher/entities/voucher.entity";
 import { Job } from "src/features/job/entities/job.entity";
+import { BaseEntity } from "src/common/base_entity";
 
 @Entity({name:"orders"})
 export class Order extends BaseEntity {

@@ -299,11 +299,15 @@ export class OrderService {
       relations:{
         orderAddress:true,
         store:true,
+        job:{
+          driver:{
+            user:true
+          }
+        },
         orderItems:{
           product:{
             category:true,
             images:true,
-            
           },
           types:{
             orderProductTypeItems:{
@@ -326,6 +330,11 @@ export class OrderService {
       relations:{
         orderAddress:true,
         store:true,
+        job:{
+          driver:{
+            user:true
+          }
+        },
         orderItems:{
           product:{
             category:true,
