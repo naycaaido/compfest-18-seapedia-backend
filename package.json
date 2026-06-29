@@ -25,6 +25,7 @@
     "seed": "ts-node -r tsconfig-paths/register src/database/seed/main.seed.ts"
   },
   "dependencies": {
+    "@fastify/helmet": "^13.0.2",
     "@fastify/multipart": "^10.0.0",
     "@fastify/static": "^9.1.3",
     "@nestjs/axios": "^4.0.1",

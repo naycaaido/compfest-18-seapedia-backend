@@ -5,6 +5,7 @@ import { BadRequestException, ClassSerializerInterceptor, HttpException, Validat
 import { HttpExceptionFilter } from './filters/http-exception.filter';
 import fastifyMultipart from '@fastify/multipart';
 import fastifyStatic from '@fastify/static';
+import fastifyHelmet from '@fastify/helmet';
 import path from 'path';
 
 async function bootstrap() {
@@ -42,6 +43,7 @@ async function bootstrap() {
   );
 
   app.enableCors()
+  await app.register(fastifyHelmet);
   await app.listen(process.env.PORT ?? 3000,'0.0.0.0');
 }
 bootstrap();
