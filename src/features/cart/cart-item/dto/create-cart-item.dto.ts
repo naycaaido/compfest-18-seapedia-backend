@@ -14,7 +14,6 @@ export class CreateCartItemDto {
     quantity!:number
         
     @IsArray()
-    @ArrayNotEmpty()
     @ValidateNested({each:true})
     @Type(() => CreateCartProductTypeDto)
     types!: CreateCartProductTypeDto[]   

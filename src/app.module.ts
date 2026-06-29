@@ -43,6 +43,8 @@ import { SchedulerModule } from './schedulers/scheduler.module';
     ConfigModule.forRoot(),
     TypeOrmModule.forRoot({
       type:"postgres",
+
+      // Local
       host:process.env.DB_HOST,
       port: parseInt(process.env.DB_PORT ?? '5432', 10),
       database:process.env.DB_DATABASE,

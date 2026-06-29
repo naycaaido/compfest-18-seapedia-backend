@@ -66,7 +66,7 @@ export class Order extends BaseEntity {
     orderHistories!:OrderHistory[]
 
     @OneToOne(() => Job, job => job.order,{
-        cascade:['insert']
+        cascade:['insert','update']
     })
     job!:Job
 

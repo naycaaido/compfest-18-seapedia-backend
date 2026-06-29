@@ -25,14 +25,23 @@ export class DriverController {
     return this.jobService.confirmJob(+id,payload);
   }
 
-  @SuccessMessage(successMessageGlobal(SuccessMessageType.RETRIEVE,'Jobs'))
-  @Get('job')
+  @SuccessMessage(successMessageGlobal(SuccessMessageType.RETRIEVE,'Jobs History'))
+  @Get('job/history')
   findAllJob(
     @PayloadJWT() payload:Payload
   ) {
     return this.jobService.findJob(payload);
   }
 
+  @SuccessMessage(successMessageGlobal(SuccessMessageType.RETRIEVE,'Current Jobs'))
+  @Get('job/current')
+  findCurrentJob(
+    @PayloadJWT() payload:Payload
+  ) {
+    return this.jobService.findJobActive(payload);
+  }
+
+  
   @SuccessMessage(successMessageGlobal(SuccessMessageType.RETRIEVE,'Available Jobs'))
   @Get('job/available')
   findAvailableJob(
@@ -50,6 +59,7 @@ export class DriverController {
     return this.jobService.findOne(+id,payload);
   }
 
+  @SuccessMessage(successMessageGlobal(SuccessMessageType.DEFAULT,'Take a Job'))
   @Post('job')
   takeJob(
     @Body() createJobDto: TakeJobDto,

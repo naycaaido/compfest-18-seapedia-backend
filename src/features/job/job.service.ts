@@ -11,13 +11,15 @@ import { Driver } from 'typeorm/browser';
 import { OrderStatus } from '../order/entities/order-status.enum';
 import { OrderHistory } from '../order/entities/order-history.entity';
 import { WalletTransactionService } from '../wallet/wallet-transaction/wallet-transaction.service';
+import { SystemService } from '../system/system.service';
 
 @Injectable()
 export class JobService {
   constructor(
     @InjectRepository(Job)
     private jobRepository:Repository<Job>,
-    private walletTransactionService:WalletTransactionService
+    private walletTransactionService:WalletTransactionService,
+    private readonly systemService:SystemService
   ) {
     
   }
@@ -110,6 +112,9 @@ export class JobService {
         order:{
           orderAddress:true,
           orderItems:{
+            product:{
+              images:true
+            },
             types:{
               type:true,
               orderProductTypeItems:{
@@ -124,8 +129,40 @@ export class JobService {
   }
   
   async findJob(payload:Payload){
-    const [activeJob,historyJob] = await Promise.all([
-      this.jobRepository.find({
+    const historyJob = await this.jobRepository.find({
+        where:{
+          driver:{
+            id:payload.userRoleId
+          },
+          is_done:true
+        },
+        relations:{
+        order:{
+          orderAddress:true,
+          orderItems:{
+            product:{
+              images:true
+            },
+            types:{
+              type:true,
+              orderProductTypeItems:{
+                item:true
+              }
+            }
+          },
+          store:true
+        }
+      },
+        order:{
+          id:'DESC'
+        }
+      })
+
+    return historyJob
+  }
+
+    async findJobActive(payload:Payload){
+    const activeJob = await this.jobRepository.find({
         where:{
           driver:{
             id:payload.userRoleId
@@ -136,6 +173,9 @@ export class JobService {
         order:{
           orderAddress:true,
           orderItems:{
+            product:{
+              images:true
+            },
             types:{
               type:true,
               orderProductTypeItems:{
@@ -145,35 +185,13 @@ export class JobService {
           },
           store:true
         }
-        },
+      },
         order:{
           id:'DESC'
         }
-      }),
+    })
 
-      this.jobRepository.find({
-        where:{
-          driver:{
-            id:payload.userRoleId
-          },
-          is_done:true
-        },
-        relations:{
-          order:{
-            orderAddress:true,
-            orderItems:true
-          }
-        },
-        order:{
-          id:'DESC'
-        }
-      })
-    ])
-
-    return {
-      active_job:activeJob,
-      history_job:historyJob
-    }
+    return activeJob
   }
 
   async changeOrderStatus(
@@ -200,19 +218,30 @@ export class JobService {
     const job = await this.jobRepository.findOne({
       where:{
         id,
-        driver:{
-          id:payload.userRoleId
-        }
       },
-      relations:{
+relations:{
         order:{
           orderAddress:true,
-          orderItems:true
+          orderItems:{
+            product:{
+              images:true
+            },
+            types:{
+              type:true,
+              orderProductTypeItems:{
+                item:true
+              }
+            }
+          },
+          store:true
         }
       },
     })
+    if(job?.driver_id != null && job.driver_id != payload.userRoleId){
+      throw new NotFoundException(exceptionMessage(ExceptionType.NOT_FOUND),'Job')
+    }
     if(!job){
-      throw new NotFoundException(exceptionMessage(ExceptionType.NOT_FOUND,'Job Not Found'))
+      throw new NotFoundException(exceptionMessage(ExceptionType.NOT_FOUND,'Job'))
     }
     return job
   }

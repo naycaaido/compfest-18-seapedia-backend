@@ -4,6 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Job } from './entities/job.entity';
 import { Order } from '../order/entities/order.entity';
 import { WalletTransactionModule } from '../wallet/wallet-transaction/wallet-transaction.module';
+import { SystemModule } from '../system/system.module';
 
 @Module({
   imports:[
@@ -11,7 +12,8 @@ import { WalletTransactionModule } from '../wallet/wallet-transaction/wallet-tra
       Job,
       Order
     ]),
-    WalletTransactionModule
+    WalletTransactionModule,
+    SystemModule
   ],
   exports:[JobService],
   providers: [JobService],

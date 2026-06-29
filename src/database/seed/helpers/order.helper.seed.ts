@@ -228,8 +228,7 @@ export function createOrder(
 
                 params.driverId!,
 
-                params.status ==
-                    OrderStatus.DONE
+                params.status == OrderStatus.DONE || params.status == OrderStatus.RETURN
 
             )as Job
 

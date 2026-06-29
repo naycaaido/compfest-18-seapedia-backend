@@ -108,7 +108,7 @@ export class VoucherService{
       log("voucher")
       log(voucher?.discount.remaining_usage)
       if(!voucher){
-        throw new NotFoundException(exceptionMessage(ExceptionType.NOT_FOUND,'Voucher Not Found'))
+        throw new NotFoundException(exceptionMessage(ExceptionType.NOT_FOUND,'Voucher'))
       }
       if(voucher.discount.expired_date <= date){
         throw new ForbiddenException(exceptionMessage(ExceptionType.FORBIDDEN,'Code Invalid'))

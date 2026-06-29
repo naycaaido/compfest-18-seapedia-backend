@@ -1,6 +1,8 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { Cron } from "@nestjs/schedule";
 import { InjectRepository } from "@nestjs/typeorm";
+import { log } from "console";
+import { Job } from "src/features/job/entities/job.entity";
 import { OrderHistory } from "src/features/order/entities/order-history.entity";
 import { OrderStatus } from "src/features/order/entities/order-status.enum";
 import { Order } from "src/features/order/entities/order.entity";
@@ -25,12 +27,23 @@ export class OrderSchedulerService {
 
     @InjectRepository(System)
     private systemRepository: Repository<System>,
-  ) {}
+  ) {
+
+  }
 
   async processOverdueOrders() {
-
     const system = await this.systemRepository.findOneBy({id:1})
     const businessDate = new Date(system!.current_date)
+    console.log("Business Date:", businessDate);
+    const orders = await this.orderRepository.find();
+
+    orders.forEach(order => {
+      console.log(
+        order.id,
+        order.status,
+        order.overdue
+      );
+    });
 
     const overdueOrders = await this.orderRepository
       .createQueryBuilder('order')
@@ -46,7 +59,6 @@ export class OrderSchedulerService {
         businessDate,
       })
       .getRawMany();
-
     for (const overdueOrder of overdueOrders) {
       await this.refundOverdueOrder(overdueOrder.id);
     }
@@ -74,6 +86,7 @@ export class OrderSchedulerService {
           }
         },
       });
+      
 
       if (!order) {
         return;
@@ -102,6 +115,13 @@ export class OrderSchedulerService {
         },
         'balance',
         order.total_fee,
+      );
+      await manager.update(
+          Job,
+          { order: { id: orderId } },
+          {
+            is_done: true,
+          },
       );
 
       await manager.save(
@@ -183,6 +203,7 @@ export class OrderSchedulerService {
   }
   @Cron('* * * * *') 
   async handleCron(){
+    log("Run procccess overdue handle")
     await this.processOverdueOrders()
   }
 }

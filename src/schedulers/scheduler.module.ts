@@ -7,6 +7,7 @@ import { WalletTransactions } from "src/features/wallet/wallet-transaction/entit
 import { Wallet } from "src/features/wallet/wallet/entities/wallet.entity";
 import { OrderSchedulerService } from "./refund";
 import { System } from "src/features/system/system.entity";
+import { SystemService } from "./system";
 
 @Module({
   imports: [
@@ -19,7 +20,7 @@ import { System } from "src/features/system/system.entity";
     ]),
     
   ],
-  providers: [OrderSchedulerService],
+  providers: [OrderSchedulerService,SystemService],
   exports: [OrderSchedulerService],
 })
 export class SchedulerModule {}
