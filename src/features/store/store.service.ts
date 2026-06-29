@@ -286,23 +286,23 @@ export class StoreService {
   }
 
   private async findOrCreateRegion<T extends Region>(
-  repository: Repository<T>,
-  id: number,
-  name: string,
-): Promise<T> {
-  let region = await repository.findOneBy({
-    id,
-  } as FindOptionsWhere<T>);
-
-  if (!region) {
-    region = repository.create({
+    repository: Repository<T>,
+    id: number,
+    name: string,
+  ): Promise<T> {
+    let region = await repository.findOneBy({
       id,
-      name,
-    } as DeepPartial<T>);
+    } as FindOptionsWhere<T>);
 
-    region = await repository.save(region);
+    if (!region) {
+      region = repository.create({
+        id,
+        name,
+      } as DeepPartial<T>);
+
+      region = await repository.save(region);
+    }
+
+    return region;
   }
-
-  return region;
-}
 }

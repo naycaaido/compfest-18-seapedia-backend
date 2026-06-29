@@ -13,7 +13,7 @@ export default class BuyerSeeder implements Seeder {
                 user:{
                     id:1
                 },
-                active_address_id:1,
+                active_address_id:null,
             },
         ])
     }

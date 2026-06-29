@@ -1,5 +1,6 @@
 import { BaseEntity } from "src/common/base_entity";
 import { Buyer } from "src/features/buyer/entities/buyer.entity";
+import { Province, City, District, Village } from "src/features/store/entities/region.entity";
 import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity({name:"address"})
@@ -15,6 +16,26 @@ export class Address extends BaseEntity{
 
     @Column({type:"text"})
     address_detail!:string
+
+    @ManyToOne(() => Province,{
+        cascade:['insert'],
+    })
+    province!:Province
+    
+    @ManyToOne(() => City,{
+        cascade:['insert'],
+    })
+    city!:City
+    
+    @ManyToOne(() => District,{
+        cascade:['insert'],
+    })
+    district!:District
+    
+    @ManyToOne(() => Village,{
+        cascade:['insert'],
+    })
+    village!:Village
 
     @Column('decimal', {
     precision: 10,
@@ -32,7 +53,7 @@ export class Address extends BaseEntity{
 
     @ManyToOne(() => Buyer, buyer => buyer.addresses,{
         onDelete:'CASCADE',
-        cascade:['insert']
+        cascade:['insert','update']
     })
     @JoinColumn({name:"buyer_id"})
     buyer!:Buyer

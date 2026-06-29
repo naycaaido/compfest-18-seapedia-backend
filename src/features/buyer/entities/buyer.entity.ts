@@ -1,5 +1,5 @@
 import { BaseEntity } from "src/common/base_entity";
-import { Column, Entity, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { User } from "../../user/entities/user.entity";
 import { Exclude } from "class-transformer";
 import { Cart } from "src/features/cart/cart/entities/cart.entity";
@@ -17,6 +17,10 @@ export class Buyer extends BaseEntity {
         nullable: true
     })
     active_address_id?: number | null
+
+    @ManyToOne(() => Address, { nullable: true })
+    @JoinColumn({ name: "active_address_id" })
+    activeAddress?: Address;
 
     @Column({type:"varchar",length:"20",nullable:true})
     phone_number?:string

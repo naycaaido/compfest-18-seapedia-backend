@@ -43,6 +43,21 @@ export class BuyerService {
   findOne(id: number) {
     return `This action returns a #${id} buyer`;
   }
+  async validBuyer(payload:Payload){
+    const buyer = await this.buyerRepository.findOne({
+      where:{
+        id:payload.userRoleId
+      },
+      relations:{
+        addresses:true,
+      }
+    })
+    if(!buyer){
+      throw new NotFoundException(exceptionMessage(ExceptionType.NOT_FOUND,"Buyer Not Found"))
+    }
+    const isValid = buyer.addresses.length > 0 && buyer.phone_number != null
+    return isValid
+  }
 
   async update(payload:Payload, updateBuyerDto: UpdateBuyerDto) {
     const buyer = await this.buyerRepository.findOneBy({

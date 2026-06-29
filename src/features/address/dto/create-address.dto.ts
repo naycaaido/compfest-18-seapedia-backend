@@ -1,3 +1,4 @@
+import { Type } from "class-transformer";
 import { IsNotEmpty, IsNumber, IsString, Max, Min } from "class-validator";
 
 export class CreateAddressDto {
@@ -13,13 +14,49 @@ export class CreateAddressDto {
     @IsString()
     address_detail!:string
 
+    @IsNotEmpty()
     @IsNumber()
-    @Min(-90)
-    @Max(90)
-    latitude!: number;
+    @Type(() => Number)
+    province_id!:number
 
+    @IsNotEmpty()
     @IsNumber()
-    @Min(-180)
-    @Max(180)
-    longitude!:number
+    @Type(() => Number)
+    city_id!:number
+
+    @IsNotEmpty()
+    @IsNumber()
+    @Type(() => Number)
+    district_id!:number
+
+    @IsNotEmpty()
+    @IsNumber()
+    @Type(() => Number)
+    village_id!:number
+
+    @IsNotEmpty()
+    @IsString()
+    province!:string
+
+    @IsNotEmpty()
+    @IsString()
+    city!:string
+
+    @IsNotEmpty()
+    @IsString()
+    district!:string
+
+    @IsNotEmpty()
+    @IsString()
+    village!:string
+
+    // @IsNumber()
+    // @Min(-90)
+    // @Max(90)
+    // latitude!: number;
+
+    // @IsNumber()
+    // @Min(-180)
+    // @Max(180)
+    // longitude!:number
 }
