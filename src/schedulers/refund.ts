@@ -34,16 +34,7 @@ export class OrderSchedulerService {
   async processOverdueOrders() {
     const system = await this.systemRepository.findOneBy({id:1})
     const businessDate = new Date(system!.current_date)
-    console.log("Business Date:", businessDate);
     const orders = await this.orderRepository.find();
-
-    orders.forEach(order => {
-      console.log(
-        order.id,
-        order.status,
-        order.overdue
-      );
-    });
 
     const overdueOrders = await this.orderRepository
       .createQueryBuilder('order')
@@ -203,7 +194,6 @@ export class OrderSchedulerService {
   }
   @Cron('* * * * *') 
   async handleCron(){
-    log("Run procccess overdue handle")
     await this.processOverdueOrders()
   }
 }

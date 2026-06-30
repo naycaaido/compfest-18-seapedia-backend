@@ -138,9 +138,6 @@ export class UserService {
       relations:[
         "roles",
         "buyer",
-        "seller",
-        "driver",
-        "wallet"
       ]
     })
     return user;

@@ -148,6 +148,12 @@ export class ProductService {
           payload.userRoleId,
           product.promo!.discount.id
         )
+        product.types = product.types
+  .map(type => ({
+    ...type,
+    items: type.items.filter(item => item.stock > 0)
+  }))
+  .filter(type => type.items.length > 0);
         if(!canUsePromo){
           product.promo = null as any
         }
@@ -177,6 +183,16 @@ export class ProductService {
     if(payload){
       await this.applyPromoValidation(product,payload)
     }
+
+    if(product.types != null){
+    product.types = product.types
+  .map(type => ({
+    ...type,
+    items: type.items.filter(item => item.stock > 0)
+  }))
+  .filter(type => type.items.length > 0);
+    }
+
 
     return product
   }
