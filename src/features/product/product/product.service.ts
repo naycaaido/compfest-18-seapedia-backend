@@ -87,7 +87,7 @@ export class ProductService {
           id: storeId,
         },
         images: (newFiles ?? []).map(imageId => ({
-          image_id:path.join(DirType.PRODUCT,imageId)
+          image_id:`${DirType.PRODUCT}/${imageId}`
         })),
       })
       

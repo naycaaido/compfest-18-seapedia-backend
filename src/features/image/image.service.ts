@@ -6,32 +6,59 @@ import { randomUUID } from "crypto"
 import { File } from "./constant"
 import { DirType } from "src/common/utils"
 import sharp from "sharp"
+import { SupabaseService } from "src/supabase/supabase.service"
+import { log } from "console"
 
 @Injectable()
 export class ImageService{
-    async writeImage(file:File,fileName:string,folderName:string){
-        try {
-            const dir = path.join(cwd(),'public',folderName)
-            const filePath = path.join(dir,fileName)
-
-            await fs.mkdir(dir,{recursive:true})
-            const compressedBuffer  = await this.compressImage(file.buffer,file.mimeType)
-            await fs.writeFile(filePath,compressedBuffer)
-            return `${fileName}`
-        } catch(error){
-            throw error
-        }
+    constructor(
+        private readonly supabaseService:SupabaseService
+    ) {
+    
     }
-
-    async removeImage(filePath:string) {
-        const dir = `${cwd()}/public/${filePath}`
+    async writeImage(
+        file: File,
+        fileName: string,
+        folderName: string,
+    ) {
         try {
-            await fs.unlink(dir)
+            const compressedBuffer = await this.compressImage(
+                file.buffer,
+                file.mimeType,
+            );
+
+            const path = `${folderName}/${fileName}`;
+
+            log("Path")
+            log(path)
+            const { error } = await this.supabaseService.client.storage
+                .from(process.env.SUPABASE_BUCKET!)
+                .upload(path, compressedBuffer, {
+                    contentType: file.mimeType,
+                    upsert: true,
+                });
+
+            if (error) {
+                throw error;
+            }
+
+            return path;
         } catch (error) {
-            throw error
+            throw error;
         }
     }
 
+    async removeImage(path: string) {
+        log("path remove")
+        log(path)
+        const { error } = await this.supabaseService.client.storage
+            .from(process.env.SUPABASE_BUCKET!)
+            .remove([path]);
+
+        if (error) {
+            throw error;
+        }
+    }
     makeFileName(oriFileName:string){
         const id = randomUUID()
         const ext = path.extname(oriFileName)

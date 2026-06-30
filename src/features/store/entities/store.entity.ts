@@ -29,9 +29,8 @@ export class Store extends BaseEntity {
 
     @Expose()
     get image_url(): string | null {
-        return this.image_id
-        ? `${process.env.BASE_URL}/${this.image_id}`
-        : null;
+        if (!this.image_id) return null;
+        return `${process.env.SUPABASE_URL}/storage/v1/object/public/${process.env.SUPABASE_BUCKET}/${this.image_id}`;
     }
 
     @Column('decimal', {

@@ -76,7 +76,7 @@ export class StoreService {
         address:`${createStoreDto.address}, ${createStoreDto.district}, ${addressGeocode}`,
         latitude:location.latitude,
         longitude:location.longitude,
-        image_id: image_url ? path.join(DirType.STORE, image_url) : undefined,
+        image_id: image_url ? `${DirType.STORE}/${image_url}` : undefined,
         province,
         city,
         district,
@@ -166,7 +166,7 @@ export class StoreService {
 
       const storeCreated = this.storeRepository.create({
         ...updateStoreDto,
-        image_id: image_url ? path.join(DirType.STORE, image_url) : undefined,
+        image_id: image_url ? `${DirType.STORE}/${image_url}` : undefined,
         address: address,
         province: province,
         city:city,

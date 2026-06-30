@@ -103,7 +103,7 @@ export class ProductImageService {
         product:{
           id:productId
         },
-        image_id:path.join(DirType.PRODUCT,file)
+        image_id:`${DirType.PRODUCT}/${file}`
       }))
       
       await queryRunner.manager.save(productsImages)

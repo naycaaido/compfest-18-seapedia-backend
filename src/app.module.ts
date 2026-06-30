@@ -45,17 +45,17 @@ import { SchedulerModule } from './schedulers/scheduler.module';
       type:"postgres",
 
       // Local
-      host:process.env.DB_HOST,
-      port: parseInt(process.env.DB_PORT ?? '5432', 10),
-      database:process.env.DB_DATABASE,
-      username:process.env.DB_USERNAME,
-      password:process.env.DB_PASSWORD,
+      // host:process.env.DB_HOST,
+      // port: parseInt(process.env.DB_PORT ?? '5432', 10),
+      // database:process.env.DB_DATABASE,
+      // username:process.env.DB_USERNAME,
+      // password:process.env.DB_PASSWORD,
 
       // Supabase
-      // url: process.env.DATABASE_URL,
-      // ssl: { rejectUnauthorized: false },
-      // retryAttempts: 1,
-      // retryDelay: 1000,
+      url: process.env.DATABASE_URL,
+      ssl: { rejectUnauthorized: false },
+      retryAttempts: 1,
+      retryDelay: 1000,
 
       // Common
       synchronize:false,

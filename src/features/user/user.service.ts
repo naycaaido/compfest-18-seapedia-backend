@@ -19,6 +19,7 @@ import { instanceToPlain } from 'class-transformer';
 import { Wallet } from '../wallet/wallet/entities/wallet.entity';
 import { exceptionMessage, ExceptionType } from 'src/common/exception';
 import { ChangeUserRoleDto } from './dto/change-user-role.dto';
+import { SupabaseService } from 'src/supabase/supabase.service';
 
 @Injectable()
 export class UserService {
@@ -29,6 +30,7 @@ export class UserService {
     @InjectRepository(UserRoles)
     private userRolesRepository: Repository<UserRoles>,
 
+    private readonly supabaseService:SupabaseService,
     private readonly buyerService : BuyerService,
     private readonly sellerService : SellerService,
     private readonly driverService : DriverService,
@@ -38,6 +40,18 @@ export class UserService {
   ) {
     
   }
+
+  async testConnection() {
+    const { data, error } = await this.supabaseService.client.storage
+        .from(process.env.SUPABASE_BUCKET!)
+        .list();
+
+    console.log(data);
+
+    if (error) {
+        console.error(error);
+    }
+}
 
   async login(loginUserDto : LoginUserDto){
     try {

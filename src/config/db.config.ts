@@ -18,8 +18,8 @@ export const options: DataSourceOptions & SeederOptions = {
   database: configService.get<string>('DB_DATABASE'),
 
   // Supabase
-  // url: process.env.DATABASE_URL,
-  // ssl: { rejectUnauthorized: false },
+  url: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false },
 
   seeds: [join(process.cwd(), 'src', '**', '*.seed.{ts,js}')],
   synchronize: false,

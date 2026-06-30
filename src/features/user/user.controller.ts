@@ -19,6 +19,13 @@ import { ChangeUserRoleDto } from './dto/change-user-role.dto';
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
+  @SuccessMessage(successMessageGlobal(SuccessMessageType.DEFAULT,"Test Supabase Connection"))
+  @Public()
+  @Get('test')
+  async test2(){
+    return this.userService.testConnection()
+  }
+
   @SuccessMessage(successMessageGlobal(SuccessMessageType.CREATE,"account"))
   @Public()
   @Post('register')
